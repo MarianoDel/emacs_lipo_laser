@@ -1,3 +1,12 @@
+//---------------------------------------------
+// #### PROYECTO LIPO LASER - Custom Board ####
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### SIGNALS.C #############################
+//---------------------------------------------
 
 /* Includes ------------------------------------------------------------------*/
 #include "signals.h"
@@ -18,11 +27,13 @@ extern volatile unsigned short adc_ch[];
 
 //del Main
 extern volatile unsigned short timer_signals;
+extern volatile unsigned short timer_signals_gen;
 
 //--- VARIABLES GLOBALES ---//
 treatment_t treatment_state = TREATMENT_INIT_FIRST_TIME;
 signals_struct_t signal_to_gen;
-discharge_state_t discharge_state = INIT_DISCHARGE;
+cwave_state_t cwave_state = INIT_CWAVE;
+pulsed_state_t pulsed_state = INIT_PULSED;
 unsigned char global_error = 0;
 
 unsigned short * p_signal;
@@ -106,98 +117,144 @@ const unsigned short s_triangular_6A [SIZEOF_SIGNALS] = {0,11,23,35,47,59,71,83,
 
 
 //--- FUNCIONES DEL MODULO ---//
-// void TreatmentManager (void)
-// {
-//     switch (treatment_state)
-//     {
-//     case TREATMENT_INIT_FIRST_TIME:
-//         HIGH_LEFT_PWM(0);
-//         LOW_LEFT_PWM(0);
-//         HIGH_RIGHT_PWM(0);
-//         LOW_RIGHT_PWM(DUTY_ALWAYS);
+void TreatmentManager (void)
+{
+    switch (treatment_state)
+    {
+        case TREATMENT_INIT_FIRST_TIME:
+            UpdateLaserCh1(0);
+            UpdateLaserCh2(0);
+            UpdateLaserCh3(0);
+            UpdateLaserCh4(0);
 
-//         if (AssertTreatmentParams() == resp_ok)
-//         {
-//             treatment_state = TREATMENT_STANDBY;
-//             ChangeLed(LED_TREATMENT_STANDBY);
-//         }
-//         break;
+            Update_TIM3_CH1(0);
+            Update_TIM3_CH2(0);
+            Update_TIM3_CH3(0);
+            Update_TIM3_CH4(0);
 
-//     case TREATMENT_STANDBY:
-//         break;
+            if (AssertTreatmentParams() == resp_ok)
+            {
+                treatment_state = TREATMENT_STANDBY;
+                ChangeLed(LED_TREATMENT_STANDBY);
+            }
+            break;
 
-//     case TREATMENT_START_TO_GENERATE:		//reviso una vez mas los parametros y no tener ningun error
-//         if ((AssertTreatmentParams() == resp_ok) && (GetErrorStatus() == ERROR_OK))
-//         {
-//             discharge_state = INIT_DISCHARGE;
+        case TREATMENT_STANDBY:
+            break;
 
-//             //cargo valor maximo de corriente para el soft_overcurrent
-//             soft_overcurrent_treshold = 1.2 * I_MAX * signal_to_gen.power / 100;
-//             soft_overcurrent_index = 0;
+        case TREATMENT_START_TO_GENERATE:    //reviso una vez mas los parametros y no tener ningun error
+            if ((AssertTreatmentParams() == resp_ok) && (GetErrorStatus() == ERROR_OK))
+            {
+#ifdef USE_SOFT_OVERCURRENT
+                //cargo valor maximo de corriente para el soft_overcurrent
+                soft_overcurrent_treshold = 1.2 * I_MAX;
+                soft_overcurrent_index = 0;
 
-//             EXTIOn();
+                for (unsigned char i = 0; i < SIZEOF_OVERCURRENT_BUFF; i++)
+                    soft_overcurrent_max_current_in_cycles[i] = 0;
+#endif
+                if (signal_to_gen.signal == CWAVE_SIGNAL)
+                {
+                    cwave_state = INIT_CWAVE;
+                    treatment_state = TREATMENT_GENERATING_CWAVE;
+                }
 
-// #ifdef USE_SOFT_OVERCURRENT
-//             for (unsigned char i = 0; i < SIZEOF_OVERCURRENT_BUFF; i++)
-//                 soft_overcurrent_max_current_in_cycles[i] = 0;
-// #endif
-//             if (signal_to_gen.synchro_needed)
-//                 treatment_state = TREATMENT_GENERATING_WITH_SYNC;
-//             else
-//                 treatment_state = TREATMENT_GENERATING;
+                if (signal_to_gen.signal == PULSED_SIGNAL)
+                {
+                    pulsed_state = INIT_PULSED;
+                    treatment_state = TREATMENT_GENERATING_PULSED;
+                }
 
-//             ChangeLed(LED_TREATMENT_GENERATING);
-//         }
-//         else
-//         {
-//             //error de parametros
-//             treatment_state = TREATMENT_INIT_FIRST_TIME;
-//         }
-//         break;
+                if (signal_to_gen.signal == MODULATED_SIGNAL)
+                    treatment_state = TREATMENT_GENERATING_MODULATED;
 
-//     case TREATMENT_GENERATING:
-//         //Cosas que dependen de las muestras
-//         //se la puede llamar las veces que sea necesario y entre funciones, para acelerar
-//         //la respuesta
-//         GenerateSignal();
+                ChangeLed(LED_TREATMENT_GENERATING);
+            }
+            else
+            {
+                //error de parametros
+                treatment_state = TREATMENT_INIT_FIRST_TIME;
+                ChangeLed(LED_TREATMENT_ERROR);
+            }
+            break;
 
-// #ifdef USE_SOFT_OVERCURRENT
-//         //TODO: poner algun synchro con muestras para que no ejecute el filtro todo el tiempo
-//         //soft current overload check
-//         // if (MAFilter8 (soft_overcurrent_max_current_in_cycles) > soft_overcurrent_treshold)
-//         // {
-//         //     treatment_state = TREATMENT_STOPPING;
-//         //     SetErrorStatus(ERROR_SOFT_OVERCURRENT);
-//         // }
-// #endif
-//         break;
+        case TREATMENT_GENERATING_CWAVE:
+            //Cosas que dependen de las muestras
+            //se la puede llamar las veces que sea necesario y entre funciones, para acelerar
+            //la respuesta
+            GenerateSignalCWave();
 
-//     case TREATMENT_GENERATING_WITH_SYNC:
-//         break;
+#ifdef USE_SOFT_OVERCURRENT
+            //TODO: poner algun synchro con muestras para que no ejecute el filtro todo el tiempo
+            //soft current overload check
+            // if (MAFilter8 (soft_overcurrent_max_current_in_cycles) > soft_overcurrent_treshold)
+            // {
+            //     treatment_state = TREATMENT_STOPPING;
+            //     SetErrorStatus(ERROR_SOFT_OVERCURRENT);
+            // }
+#endif
+            break;
 
-//     case TREATMENT_STOPPING:
-//         //10ms descarga rapida y a idle
-//         HIGH_LEFT_PWM(0);
-//         LOW_RIGHT_PWM(DUTY_ALWAYS);
-//         timer_signals = 10;
-//         treatment_state = TREATMENT_STOPPING2;
-//         break;
+        case TREATMENT_GENERATING_PULSED:
+            //Cosas que dependen de las muestras
+            //se la puede llamar las veces que sea necesario y entre funciones, para acelerar
+            //la respuesta
+            GenerateSignalPulsed();
 
-//     case TREATMENT_STOPPING2:		//aca lo manda directamente la int
-//         if (!timer_signals)
-//         {
-//             treatment_state = TREATMENT_INIT_FIRST_TIME;
-//             EXTIOff();
-//             ENABLE_TIM3;
-//             LED_OFF;
-//         }
-//         break;
+#ifdef USE_SOFT_OVERCURRENT
+            //TODO: poner algun synchro con muestras para que no ejecute el filtro todo el tiempo
+            //soft current overload check
+            // if (MAFilter8 (soft_overcurrent_max_current_in_cycles) > soft_overcurrent_treshold)
+            // {
+            //     treatment_state = TREATMENT_STOPPING;
+            //     SetErrorStatus(ERROR_SOFT_OVERCURRENT);
+            // }
+#endif
+            break;
 
-//     default:
-//         treatment_state = TREATMENT_INIT_FIRST_TIME;
-//         break;
-//     }
-// }
+        case TREATMENT_GENERATING_MODULATED:
+            //Cosas que dependen de las muestras
+            //se la puede llamar las veces que sea necesario y entre funciones, para acelerar
+            //la respuesta
+            GenerateSignalCWave();
+
+#ifdef USE_SOFT_OVERCURRENT
+            //TODO: poner algun synchro con muestras para que no ejecute el filtro todo el tiempo
+            //soft current overload check
+            // if (MAFilter8 (soft_overcurrent_max_current_in_cycles) > soft_overcurrent_treshold)
+            // {
+            //     treatment_state = TREATMENT_STOPPING;
+            //     SetErrorStatus(ERROR_SOFT_OVERCURRENT);
+            // }
+#endif
+            break;
+            
+        case TREATMENT_STOPPING:
+            Update_TIM3_CH1(0);
+            Update_TIM3_CH2(0);
+            Update_TIM3_CH3(0);
+            Update_TIM3_CH4(0);
+
+            UpdateLaserCh1(0);
+            UpdateLaserCh2(0);
+            UpdateLaserCh3(0);
+            UpdateLaserCh4(0);
+            
+            timer_signals = 10;
+            treatment_state = TREATMENT_STOPPING2;
+            break;
+
+        case TREATMENT_STOPPING2:
+            if (!timer_signals)
+                treatment_state = TREATMENT_INIT_FIRST_TIME;
+
+            break;
+
+        default:
+            treatment_state = TREATMENT_INIT_FIRST_TIME;
+            break;
+    }
+}
 
 // void TreatmentManager_IntSpeed (void)
 // {
@@ -439,7 +496,8 @@ resp_t SetPowerLaser (unsigned char ch, unsigned char a)
 
     return resp_ok;
 }
-// //verifica que se cumplan con todos los parametros para poder enviar una señal coherente
+
+//verifica que se cumplan con todos los parametros para poder enviar una senial coherente
 resp_t AssertTreatmentParams (void)
 {
     resp_t resp = resp_error;
@@ -462,7 +520,6 @@ resp_t AssertTreatmentParams (void)
         (signal_to_gen.signal != MODULATED_SIGNAL))
         return resp;
 
-    //TODO: revisar tambien puntero!!!!
     return resp_ok;
 }
 
@@ -487,140 +544,176 @@ void SendAllConf (void)
             signal_to_gen.ch4_power_laser);
 
     Usart1Send(b);
-    Usart1Send('\n');
+    Usart1Send("\n");
 }
 
-// //la llama el manager para generar las seniales, si no esta el juper de proteccion genera
-// //sino espera a que sea quitado
-// void GenerateSignal (void)
-// {
-//     if (!protected)
-//     {
-//         if (!STOP_JUMPER)
-//         {              
-//             if (seq_ready)
-//             {
-//                 seq_ready = 0;
+//la llama el manager para generar las seniales CWAVE en los canales
+void GenerateSignalCWave (void)
+{
+    unsigned short dummy;
+    
+    switch (cwave_state)
+    {
+        case (INIT_CWAVE):
+            //por ahora solo laser
+            dummy = signal_to_gen.ch1_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh1(dummy);
 
-//                 switch (discharge_state)
-//                 {
-//                 case INIT_DISCHARGE:			//arranco siempre con descarga por TAU
-//                     HIGH_LEFT_PWM(0);
-//                     LOW_RIGHT_PWM(DUTY_ALWAYS);
-//                     discharge_state = NORMAL_DISCHARGE;
-//                     p_signal_running = p_signal;
-//                     break;
+            dummy = signal_to_gen.ch2_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh2(dummy);
 
-//                 case NORMAL_DISCHARGE:
+            dummy = signal_to_gen.ch3_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh3(dummy);
 
-//                     d = PID_roof ((*p_signal_running * signal_to_gen.power / 100),
-//                                   I_Sense, d);
+            dummy = signal_to_gen.ch4_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh4(dummy);
 
-//                     //reviso si necesito cambiar a descarga por tau
-//                     if (d < 0)
-//                     {
-//                         HIGH_LEFT_PWM(0);
-//                         discharge_state = TAU_DISCHARGE;
-//                         d = 0;	//limpio para pid descarga
-//                     }
-//                     else
-//                     {
-//                         if (d > DUTY_95_PERCENT)		//no pasar del 95% para dar tiempo a los mosfets
-//                             d = DUTY_95_PERCENT;
+            cwave_state = GEN_CWAVE;
+            timer_signals_gen = 1000;    //cada 1 seg reviso potencias
+            break;
 
-//                         HIGH_LEFT_PWM(d);
-//                     }
-//                     break;
+        case GEN_CWAVE:
+            if (!timer_signals_gen)
+                cwave_state = INIT_CWAVE;
+            break;
 
-//                 case TAU_DISCHARGE:		//la medicion de corriente sigue siendo I_Sense
+        default:
+            //si me llaman y estoy en cualquiera igual genero
+            cwave_state = INIT_CWAVE;
+            break;
+            
+    }
+}
 
-//                     d = PID_roof ((*p_signal_running * signal_to_gen.power / 100),
-//                                   I_Sense, d);	//OJO cambiar este pid
+//la llama el manager para generar las seniales PULSED en los canales
+//dependen de la freq
+void GenerateSignalPulsed (void)
+{
+    unsigned short dummy;
+    
+    switch (pulsed_state)
+    {
+        case (INIT_PULSED):
+            //por ahora solo laser
+            dummy = signal_to_gen.ch1_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh1(dummy);
 
-//                     //reviso si necesito cambiar a descarga rapida
-//                     if (d < 0)
-//                     {
-//                         if (-d < DUTY_100_PERCENT)
-//                             LOW_RIGHT_PWM(DUTY_100_PERCENT + d);
-//                         else
-//                             LOW_RIGHT_PWM(0);
+            dummy = signal_to_gen.ch2_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh2(dummy);
 
-//                         discharge_state = FAST_DISCHARGE;
-//                     }
-//                     else
-//                     {
-//                         //vuelvo a NORMAL_DISCHARGE
-//                         if (d > DUTY_95_PERCENT)		//no pasar del 95% para dar tiempo a los mosfets
-//                             d = DUTY_95_PERCENT;
+            dummy = signal_to_gen.ch3_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh3(dummy);
 
-//                         HIGH_LEFT_PWM(d);
-//                         discharge_state = NORMAL_DISCHARGE;
-//                     }
-//                     break;
+            dummy = signal_to_gen.ch4_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh4(dummy);
 
-//                 case FAST_DISCHARGE:		//la medicion de corriente ahora esta en I_Sense_negado
+            if (signal_to_gen.frequency == 0)
+                timer_signals_gen = 50;
+            else
+                timer_signals_gen = 1000 / (signal_to_gen.frequency * 2);
 
-//                     d = PID_roof ((*p_signal_running * signal_to_gen.power / 100),
-//                                   I_Sense_negado, d);	//OJO cambiar este pid
+            pulsed_state = GEN_PULSED;            
+            break;
 
-//                     //reviso si necesito cambiar a descarga rapida
-//                     if (d < 0)
-//                     {
-//                         if (-d < DUTY_100_PERCENT)
-//                             LOW_RIGHT_PWM(DUTY_100_PERCENT + d);
-//                         else
-//                             LOW_RIGHT_PWM(0);
-//                     }
-//                     else
-//                     {
-//                         //vuelvo a TAU_DISCHARGE
-//                         LOW_RIGHT_PWM(DUTY_ALWAYS);
-//                         discharge_state = TAU_DISCHARGE;
-//                     }
-//                     break;
+        case GEN_PULSED:
+            if (!timer_signals_gen)
+            {
+                UpdateLaserCh1(0);
+                UpdateLaserCh2(0);
+                UpdateLaserCh3(0);
+                UpdateLaserCh4(0);
+                if (signal_to_gen.frequency == 0)
+                    timer_signals_gen = 50;
+                else
+                    timer_signals_gen = 1000 / (signal_to_gen.frequency * 2);
 
-//                 case STOPPED_BY_INT:		//lo freno la interrupcion
-//                     break;
+                pulsed_state = NO_GEN_PULSED;
+            }
+            break;
 
-//                 default:
-//                     discharge_state = INIT_DISCHARGE;
-//                     break;
-//                 }
+        case NO_GEN_PULSED:
+            if (!timer_signals_gen)
+                pulsed_state = INIT_PULSED;
+            
+            break;
+        
+        default:
+            //si me llaman y estoy en cualquiera igual genero
+            pulsed_state = INIT_PULSED;
+            break;            
+    }
+}
 
-//                 //-- Soft Overcurrent --//
-//                 soft_overcurrent_max_current_in_cycles[soft_overcurrent_index] = I_Sense;
-//                 if (soft_overcurrent_index < (SIZEOF_OVERCURRENT_BUFF - 1))
-//                     soft_overcurrent_index++;
-//                 else
-//                     soft_overcurrent_index = 0;
+//la llama el manager para generar las seniales MODULATED en los canales
+//dependen de la freq
+void GenerateSignalModulated (void)
+{
+    unsigned short dummy;
+    
+    switch (modulated_state)
+    {
+        case (INIT_PULSED):
+            //por ahora solo laser
+            dummy = signal_to_gen.ch1_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh1(dummy);
 
-//                 //-- Signal Update --//
-//                 if ((p_signal_running + signal_to_gen.freq_table_inc) < (p_signal + SIZEOF_SIGNALS))
-//                     p_signal_running += signal_to_gen.freq_table_inc;
-//                 else
-//                     p_signal_running = p_signal;
+            dummy = signal_to_gen.ch2_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh2(dummy);
 
-//             }    //cierra sequence
-//         }    //cierra jumper protected
-//         else
-//         {
-//             //me piden que no envie senial y proteja
-//             HIGH_LEFT_PWM(0);
-//             LOW_RIGHT_PWM(0);
-//             protected = 1;
-//         }
-//     }    //cierra variable protect
-//     else
-//     {
-//         //estoy protegido reviso si tengo que salir
-//         if (!STOP_JUMPER)
-//         {
-//             //tengo que salir del modo
-//             protected = 0;
-//             LOW_RIGHT_PWM(DUTY_ALWAYS);
-//         }
-//     }
-// }
+            dummy = signal_to_gen.ch3_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh3(dummy);
+
+            dummy = signal_to_gen.ch4_power_laser * 255;
+            dummy = dummy / 100;
+            UpdateLaserCh4(dummy);
+
+            if (signal_to_gen.frequency == 0)
+                timer_signals_gen = 50;
+            else
+                timer_signals_gen = 1000 / (signal_to_gen.frequency * 2);
+
+            pulsed_state = GEN_PULSED;            
+            break;
+
+        case GEN_PULSED:
+            if (!timer_signals_gen)
+            {
+                UpdateLaserCh1((signal_to_gen.ch1_power_laser) >> 1);
+                UpdateLaserCh2((signal_to_gen.ch2_power_laser) >> 1);
+                UpdateLaserCh3((signal_to_gen.ch3_power_laser) >> 1);
+                UpdateLaserCh4((signal_to_gen.ch4_power_laser) >> 1);
+                if (signal_to_gen.frequency == 0)
+                    timer_signals_gen = 50;
+                else
+                    timer_signals_gen = 1000 / (signal_to_gen.frequency * 2);
+
+                pulsed_state = NO_GEN_PULSED;
+            }
+            break;
+
+        case NO_GEN_PULSED:
+            if (!timer_signals_gen)
+                pulsed_state = INIT_PULSED;
+            
+            break;
+        
+        default:
+            //si me llaman y estoy en cualquiera igual genero
+            pulsed_state = INIT_PULSED;
+            break;            
+    }
+}
 
 
 //--- end of file ---//

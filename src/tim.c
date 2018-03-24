@@ -1,17 +1,11 @@
-/**
-  ******************************************************************************
-  * @file    Template_2/stm32f0x_tim.c
-  * @author  Nahuel
-  * @version V1.0
-  * @date    22-August-2014
-  * @brief   TIM functions.
-  ******************************************************************************
-  * @attention
-  *
-  * Use this functions to configure timers.
-  *
-  ******************************************************************************
-  */
+//---------------------------------------------
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### TIM.C ################################
+//---------------------------------------------
 
 /* Includes ------------------------------------------------------------------*/
 #include "tim.h"
@@ -125,7 +119,7 @@ void TIM_3_Init (void)
     
     TIM3->CCER |= TIM_CCER_CC4E | TIM_CCER_CC4P | TIM_CCER_CC3E | TIM_CCER_CC3P | TIM_CCER_CC2E | TIM_CCER_CC2P | TIM_CCER_CC1E | TIM_CCER_CC1P;	//CH4 CH3 CH2 y CH1 enable on pin polarity reversal
 
-    TIM3->ARR = 1023;        //tick cada 21.33us --> 47KHz
+    TIM3->ARR = DUTY_100_PERCENT;        //tick cada 20.83us --> 48KHz
     TIM3->CNT = 0;
     TIM3->PSC = 0;		//original
 	

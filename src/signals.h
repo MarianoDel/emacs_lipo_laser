@@ -8,8 +8,9 @@ typedef enum {
 	TREATMENT_INIT_FIRST_TIME = 0,
 	TREATMENT_STANDBY,
 	TREATMENT_START_TO_GENERATE,
-	TREATMENT_GENERATING,
-	TREATMENT_GENERATING_WITH_SYNC,
+	TREATMENT_GENERATING_CWAVE,
+	TREATMENT_GENERATING_PULSED,
+        TREATMENT_GENERATING_MODULATED,
 	TREATMENT_STOPPING,
 	TREATMENT_STOPPING2
 
@@ -53,16 +54,21 @@ typedef struct {
 
 } signals_struct_t;
 
-//TIPO de descarga y estado de signal
+//Estados de las diferentes seniales
 typedef enum
 {
-	INIT_DISCHARGE = 0,
-	NORMAL_DISCHARGE,
-	TAU_DISCHARGE,
-	FAST_DISCHARGE,
-	STOPPED_BY_INT
+    INIT_CWAVE = 0,
+    GEN_CWAVE
 
-} discharge_state_t;
+} cwave_state_t;
+
+typedef enum
+{
+    INIT_PULSED = 0,
+    GEN_PULSED,
+    NO_GEN_PULSED
+
+} pulsed_state_t;
 
 
 //--- Exported constants ---//
@@ -85,7 +91,9 @@ resp_t SetSignalType (signal_type_t);
 resp_t SetFrequency (unsigned char);
 resp_t SetPowerLed (unsigned char, unsigned char);
 resp_t SetPowerLaser (unsigned char, unsigned char);
-void GenerateSignal (void);
+void GenerateSignalCWave (void);
+void GenerateSignalPulsed (void);
+void GenerateSignalModulated (void);
 resp_t AssertTreatmentParams (void);
 treatment_t GetTreatmentState (void);
 resp_t StartTreatment (void);

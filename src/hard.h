@@ -110,6 +110,8 @@ typedef enum
 #define LED_TREATMENT_STANDBY    1
 #define LED_TREATMENT_GENERATING    2
 
+#define LED_TREATMENT_ERROR    6
+
 
 /* Module Functions ------------------------------------------------------------*/
 void ChangeLed (unsigned char);

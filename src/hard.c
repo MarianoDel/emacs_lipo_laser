@@ -1,9 +1,12 @@
-/*
- * hard.c
- *
- *  Created on: 28/03/2017
- *      Author: Mariano
- */
+//---------------------------------------------
+// #### PROYECTO LIPO LASER - Custom Board ####
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### HARD.C ################################
+//---------------------------------------------
 
 #include "hard.h"
 #include "stm32f0xx.h"

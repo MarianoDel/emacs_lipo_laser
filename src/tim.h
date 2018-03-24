@@ -14,11 +14,17 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32F0X_TIM_H
-#define __STM32F0X_TIM_H
+#ifndef _TIM_H_
+#define _TIM_H_
 
 //--- Exported types ---//
 //--- Exported constants ---//
+#define DUTY_50_PERCENT		500
+#define DUTY_80_PERCENT		800
+#define DUTY_95_PERCENT		950
+#define DUTY_100_PERCENT	1000
+#define DUTY_ALWAYS			(DUTY_100_PERCENT + 1)
+
 //--- Exported macro ---//
 #define RCC_TIM1_CLK 		(RCC->APB2ENR & 0x00000800)
 #define RCC_TIM1_CLK_ON 	RCC->APB2ENR |= 0x00000800

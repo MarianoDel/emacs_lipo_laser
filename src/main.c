@@ -1,17 +1,12 @@
-/**
-  ******************************************************************************
-  * @file    Template_2/main.c
-  * @author  Nahuel
-  * @version V1.0
-  * @date    22-August-2014
-  * @brief   Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Use this template for new projects with stm32f0xx family.
-  *
-  ******************************************************************************
-  */
+//---------------------------------------------
+// #### PROYECTO LIPO LASER - Custom Board ####
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### MAIN.C ################################
+//---------------------------------------------
 
 /* Includes ------------------------------------------------------------------*/
 #include "hard.h"
@@ -23,6 +18,9 @@
 #include "adc.h"
 #include "tim.h"
 
+#include "comm.h"
+#include "signals.h"
+
 //#include <stdio.h>
 //#include <string.h>
 
@@ -30,7 +28,12 @@
 
 
 //--- VARIABLES EXTERNAS ---//
+
+// ------- Externals de los timers -------
 volatile unsigned char timer_1seg = 0;
+volatile unsigned short timer_signals = 0;
+volatile unsigned short timer_signals_gen = 0;
+volatile unsigned short timer_led = 0;
 
 // ------- Externals del USART -------
 volatile unsigned char usart1_have_data;
@@ -49,18 +52,6 @@ void TimingDelay_Decrement(void);
 
 // ------- del DMX -------
 extern void EXTI4_15_IRQHandler(void);
-
-
-
-//--- FILTROS DE SENSORES ---//
-#define LARGO_FILTRO 16
-#define DIVISOR      4   //2 elevado al divisor = largo filtro
-//#define LARGO_FILTRO 32
-//#define DIVISOR      5   //2 elevado al divisor = largo filtro
-unsigned short vtemp [LARGO_FILTRO + 1];
-unsigned short vpote [LARGO_FILTRO + 1];
-
-//--- FIN DEFINICIONES DE FILTRO ---//
 
 
 //-------------------------------------------//
@@ -107,6 +98,16 @@ int main(void)
         }
     }
 
+    //prueba modulo signals.c comm.c tim.c
+    TIM_14_Init();
+    USART1Config();
+    while (1)
+    {
+        TreatmentManager();
+        UpdateCommunications();
+        UpdateLed();
+    }
+    
     //prueba modulo comm.c
     USART1Config();
     while (1)
@@ -172,7 +173,7 @@ int main(void)
         if (usart1_have_data)
         {
             usart1_have_data = 0;
-            bytes_readed = ReadUsart1Buffer(s_to_senda, sizeof(s_to_senda));
+            bytes_readed = ReadUsart1Buffer((unsigned char *) s_to_senda, sizeof(s_to_senda));
 
             if ((bytes_readed + 1) < sizeof(s_to_senda))
             {
@@ -320,4 +321,12 @@ void TimingDelay_Decrement(void)
     if (timer_standby)
         timer_standby--;
 
+    if (timer_signals)
+        timer_signals--;
+
+    if (timer_signals_gen)
+        timer_signals_gen--;
+
+    if (timer_led)
+        timer_led--;
 }

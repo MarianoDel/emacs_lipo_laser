@@ -1,3 +1,12 @@
+//---------------------------------------------
+// #### PROYECTO LIPO LASER - Custom Board ####
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### COMM.C ################################
+//---------------------------------------------
 
 /* Includes ------------------------------------------------------------------*/
 #include "comm.h"
@@ -88,7 +97,7 @@ resp_t InterpretarMsg (void)
     char b [30];
 
     //reviso canal propio o canal broadcast
-    //TODO: despues revisar esto y cargar directamente canal
+    //TODO: despues revisar esto y cargar directamente canal (si falta memoria)
     if ((strncmp(pStr, s_ch1, sizeof(s_chf) - 1) == 0) ||
         (strncmp(pStr, s_ch2, sizeof(s_chf) - 1) == 0) ||
         (strncmp(pStr, s_ch3, sizeof(s_chf) - 1) == 0) ||
@@ -268,3 +277,5 @@ resp_t InterpretarMsg (void)
 
     return resp;
 }
+
+//--- end of file ---//
