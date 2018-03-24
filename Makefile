@@ -105,10 +105,13 @@ SRC += $(DEVDIR)/syscalls/syscalls.c
 SRC += ./src/it.c
 SRC += ./src/gpio.c
 SRC += ./src/tim.c
-# SRC += ./src/spi.c
+SRC += ./src/comm.c
+SRC += ./src/signals.c
 SRC += ./src/adc.c
 SRC += ./src/uart.c
-# SRC += ./src/flash_program.c
+SRC += ./src/dsp.c
+SRC += ./src/hard.c
+SRC += ./src/utils.c
 # SRC += ./src/programs_functions.c
 ## System Support
 #SRC += ./cmsis_boot/system_stm32f0xx.c

@@ -107,22 +107,31 @@ int main(void)
         }
     }
 
-    //prueba PWM con TIM3
-    TIM_3_Init();
-
-    Update_TIM3_CH1(0);
-    Update_TIM3_CH2(0);
-    Update_TIM3_CH3(0);
-
+    //prueba modulo comm.c
+    USART1Config();
     while (1)
     {
-        for (i = 0; i < 1023; i++)
-        {
-            Update_TIM3_CH4(i);
-            Wait_ms(10);
-        }
+        UpdateCommunications();
     }
-    // fin prueba int timer 14 y SOFT_PWM
+
+    //fin prueba modulo comm.c
+        
+    // //prueba PWM con TIM3
+    // TIM_3_Init();
+
+    // Update_TIM3_CH1(0);
+    // Update_TIM3_CH2(0);
+    // Update_TIM3_CH3(0);
+
+    // while (1)
+    // {
+    //     for (i = 0; i < 1023; i++)
+    //     {
+    //         Update_TIM3_CH4(i);
+    //         Wait_ms(10);
+    //     }
+    // }
+    // // fin prueba int timer 14 y SOFT_PWM
 
 
     // Update_TIM3_CH1(511);
