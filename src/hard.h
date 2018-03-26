@@ -113,6 +113,11 @@ typedef enum
 
 #define LED_TREATMENT_ERROR    6
 
+#define I_Sense_Ch1 adc_ch[0]
+#define I_Sense_Ch2 adc_ch[1]
+#define I_Sense_Ch3 adc_ch[2]
+#define I_Sense_Ch4 adc_ch[3]
+
 
 /* Module Functions ------------------------------------------------------------*/
 void ChangeLed (unsigned char);

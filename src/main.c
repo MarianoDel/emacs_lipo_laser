@@ -28,6 +28,9 @@
 
 
 //--- VARIABLES EXTERNAS ---//
+// ------- Externals del ADC -------
+volatile unsigned short adc_ch [4];
+volatile unsigned char seq_ready;
 
 // ------- Externals de los timers -------
 volatile unsigned char timer_1seg = 0;
@@ -98,16 +101,51 @@ int main(void)
         }
     }
 
-    //prueba modulo signals.c comm.c tim.c
+
+    //prueba modulo signals.c comm.c tim.c adc.c
+    TIM_3_Init();
+    Update_TIM3_CH1(0);
+    Update_TIM3_CH2(0);
+    Update_TIM3_CH3(0);
+    Update_TIM3_CH4(0);
+
+    AdcConfig();
+    ADC1->CR |= ADC_CR_ADSTART;
+    
     TIM_14_Init();
     USART1Config();
+
     while (1)
-    {
+    {        
         TreatmentManager();
         UpdateCommunications();
         UpdateLed();
     }
+    //fin prueba modulo signals.c comm.c tim.c adc.c
+
+    //prueba modulo adc.c tim.c e int adc
+    TIM_3_Init();
+    Update_TIM3_CH1(511);
+    Update_TIM3_CH2(0);
+    Update_TIM3_CH3(0);
+    Update_TIM3_CH4(0);
+
+    AdcConfig();
+    ADC1->CR |= ADC_CR_ADSTART;
     
+    while (1)
+    {
+        if (seq_ready)
+        {
+            seq_ready = 0;
+            if (LED)
+                LED_OFF;
+            else
+                LED_ON;
+        }
+    }               
+    //fin prueba modulo adc.c tim.c e int adc
+
     //prueba modulo comm.c
     USART1Config();
     while (1)
@@ -115,7 +153,7 @@ int main(void)
         UpdateCommunications();
     }
 
-    //fin prueba modulo comm.c
+    // fin prueba modulo comm.c
         
     // //prueba PWM con TIM3
     // TIM_3_Init();
@@ -123,12 +161,13 @@ int main(void)
     // Update_TIM3_CH1(0);
     // Update_TIM3_CH2(0);
     // Update_TIM3_CH3(0);
+    // Update_TIM3_CH4(0);    
 
     // while (1)
     // {
     //     for (i = 0; i < 1023; i++)
     //     {
-    //         Update_TIM3_CH4(i);
+    //         Update_TIM3_CH1(i);
     //         Wait_ms(10);
     //     }
     // }

@@ -40,7 +40,11 @@ modulated_state_t modulated_state = INIT_MODULATED;
 unsigned char modulated_index;
 
 unsigned char global_error = 0;
-short d = 0;
+short d_ch1 = 0;
+short d_ch2 = 0;
+short d_ch3 = 0;
+short d_ch4 = 0;
+unsigned char undersampling;
 
 //-- para determinacion de soft overcurrent ------------
 unsigned short soft_overcurrent_max_current_in_cycles [SIZEOF_OVERCURRENT_BUFF];
@@ -49,7 +53,7 @@ unsigned short soft_overcurrent_index = 0;
 
 
 //Signals Templates
-#define I_MAX 465
+#define I_MAX 36
 
 const unsigned char v_triangular [] = {0,2,5,7,10,12,15,17,20,22,
                                      28,30,33,35,38,40,43,45,48,
@@ -435,9 +439,11 @@ void SendAllConf (void)
 //la llama el manager para generar las seniales CWAVE en los canales
 void GenerateSignalCWave (void)
 {
+    unsigned short dummy;
+    
     switch (cwave_state)
     {
-        case (INIT_CWAVE):
+        case INIT_CWAVE:
             //por ahora solo laser
             UpdateLaserCh1(signal_to_gen.ch1_power_laser);
 
@@ -449,11 +455,87 @@ void GenerateSignalCWave (void)
 
             cwave_state = GEN_CWAVE;
             timer_signals_gen = 1000;    //cada 1 seg reviso potencias
+
+            //TODO: reviar esto, no volver a 0
+            undersampling = 5;    //para que arranque pid
+            d_ch1 = 0;
             break;
 
         case GEN_CWAVE:
+            //secuencia de lasers
             if (!timer_signals_gen)
                 cwave_state = INIT_CWAVE;
+
+            //secuencia de leds
+            if (seq_ready)
+            {
+                seq_ready = 0;
+                if (undersampling < 5)
+                    undersampling++;
+                else
+                {
+                    //PID CH1
+                    dummy = signal_to_gen.ch1_power_led * I_MAX;
+                    dummy >>= 8;
+                    d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1);
+
+                    if (d_ch1 < 0)
+                        d_ch1 = 0;
+                    else
+                    {
+                        if (d_ch1 > DUTY_50_PERCENT)
+                            d_ch1 = DUTY_50_PERCENT;
+
+                        Update_TIM3_CH1(d_ch1);
+                    }
+
+                    //PID CH2
+                    dummy = signal_to_gen.ch2_power_led * I_MAX;
+                    dummy >>= 8;
+                    d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2);
+
+                    if (d_ch2 < 0)
+                        d_ch2 = 0;
+                    else
+                    {
+                        if (d_ch2 > DUTY_50_PERCENT)
+                            d_ch2 = DUTY_50_PERCENT;
+
+                        Update_TIM3_CH2(d_ch2);
+                    }
+
+                    //PID CH3
+                    dummy = signal_to_gen.ch3_power_led * I_MAX;
+                    dummy >>= 8;
+                    d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3);
+
+                    if (d_ch3 < 0)
+                        d_ch3 = 0;
+                    else
+                    {
+                        if (d_ch3 > DUTY_50_PERCENT)
+                            d_ch3 = DUTY_50_PERCENT;
+
+                        Update_TIM3_CH3(d_ch3);
+                    }
+
+                    //PID CH4
+                    dummy = signal_to_gen.ch4_power_led * I_MAX;
+                    dummy >>= 8;
+                    d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4);
+
+                    if (d_ch4 < 0)
+                        d_ch4 = 0;
+                    else
+                    {
+                        if (d_ch4 > DUTY_50_PERCENT)
+                            d_ch4 = DUTY_50_PERCENT;
+
+                        Update_TIM3_CH4(d_ch4);
+                    }
+                    
+                }
+            }
             break;
 
         default:
@@ -470,7 +552,7 @@ void GenerateSignalPulsed (void)
 {
     switch (pulsed_state)
     {
-        case (INIT_PULSED):
+        case INIT_PULSED:
             //por ahora solo laser
             UpdateLaserCh1(signal_to_gen.ch1_power_laser);
 
@@ -525,7 +607,7 @@ void GenerateSignalModulated (void)
     
     switch (modulated_state)
     {
-        case (INIT_MODULATED):
+        case INIT_MODULATED:
             //por ahora solo laser
             UpdateLaserCh1(0);
 

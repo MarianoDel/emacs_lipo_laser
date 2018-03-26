@@ -5,8 +5,29 @@
  *      Author: Mariano
  */
 
-#ifndef ADC_H_
-#define ADC_H_
+#ifndef _ADC_H_
+#define _ADC_H_
+
+//----------- Defines For Configuration --------------//
+//----------- Some ADC Configurations ----------------//
+#define ADC_WITH_INT
+
+
+#ifdef WITH_TEMP_CONTROL
+#define ADC_WITH_TEMP_SENSE
+#endif
+
+#ifdef ADC_WITH_TEMP_SENSE
+#define SIZEOF_BOARD_TEMP		8
+#endif
+//----------- End of ADC Configurations --------------//
+
+#ifdef ADC_WITH_INT
+#define I_Sense_Ch1		adc_ch[0]
+#define I_Sense_Ch2		adc_ch[1]
+#define I_Sense_Ch3        	adc_ch[2]
+#define I_Sense_Ch4        	adc_ch[3]
+#endif
 
 #define RCC_ADC_CLK 		(RCC->APB2ENR & 0x00000200)
 #define RCC_ADC_CLK_ON 		RCC->APB2ENR |= 0x00000200
