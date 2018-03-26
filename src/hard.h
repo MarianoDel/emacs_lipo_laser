@@ -20,7 +20,8 @@
 // #define SECOND_POWER_BOARD
 
 //------ Configuration for Firmware-Channels -----
-
+#define LED_AND_LASER_SAME_POWER    //se toma la potencia de laser como master
+// #define LED_AND_LASER_DIFFERENT_POWER
 
 //-------- Configuration for Outputs-Channels -----
 

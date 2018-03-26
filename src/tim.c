@@ -184,7 +184,8 @@ void TIM_14_Init (void)
     //Configuracion del timer.
     TIM14->CR1 = 0x00;		//clk int / 1; upcounting; uev
     TIM14->PSC = 47;		//tick cada 1us
-    TIM14->ARR = 20;	//int cada 20us
+    // TIM14->ARR = 20;	//int cada 20us
+    TIM14->ARR = 20;	//int cada 10us para pruebas
     TIM14->EGR |= 0x0001;
 
     // Enable timer interrupt ver UDIS

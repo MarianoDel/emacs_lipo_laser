@@ -32,16 +32,15 @@ extern volatile unsigned short timer_signals_gen;
 //--- VARIABLES GLOBALES ---//
 treatment_t treatment_state = TREATMENT_INIT_FIRST_TIME;
 signals_struct_t signal_to_gen;
+
+//--- Para las Signals
 cwave_state_t cwave_state = INIT_CWAVE;
 pulsed_state_t pulsed_state = INIT_PULSED;
+modulated_state_t modulated_state = INIT_MODULATED;
+unsigned char modulated_index;
+
 unsigned char global_error = 0;
-
-unsigned short * p_signal;
-unsigned short * p_signal_running;
-
 short d = 0;
-
-unsigned char protected = 0;
 
 //-- para determinacion de soft overcurrent ------------
 unsigned short soft_overcurrent_max_current_in_cycles [SIZEOF_OVERCURRENT_BUFF];
@@ -51,69 +50,27 @@ unsigned short soft_overcurrent_index = 0;
 
 //Signals Templates
 #define I_MAX 465
-const unsigned short s_senoidal_1_5A [SIZEOF_SIGNALS] ={0,19,38,58,77,96,115,134,152,171,
-														206,224,240,257,273,288,303,318,332,
-														358,370,381,392,402,412,420,428,435,
-														447,452,456,460,462,464,464,464,464,
-														460,456,452,447,442,435,428,420,412,
-														392,381,370,358,345,332,318,303,288,
-														257,240,224,206,189,171,152,134,115,
-														77,58,38,19,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0};
 
-const unsigned short s_cuadrada_1_5A [SIZEOF_SIGNALS] = {465,465,465,465,465,465,465,465,465,465,
-														465,465,465,465,465,465,465,465,465,
-														465,465,465,465,465,465,465,465,465,
-														465,465,465,465,465,465,465,465,465,
-														465,465,465,465,465,465,465,465,465,
-														465,465,465,465,465,465,465,465,465,
-														465,465,465,465,465,465,465,465,465,
-														465,465,465,465,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0};
-
-const unsigned short s_triangular_1_5A [SIZEOF_SIGNALS] = {0,6,12,18,24,31,37,43,49,55,
-														68,74,80,86,93,99,105,111,117,
-														130,136,142,148,155,161,167,173,179,
-														192,198,204,210,217,223,229,235,241,
-														254,260,266,272,279,285,291,297,303,
-														316,322,328,334,341,347,353,359,365,
-														378,384,390,396,403,409,415,421,427,
-														440,446,452,458,465,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0,
-														0,0,0,0,0,0,0,0,0};
-
-const unsigned short s_triangular_6A [SIZEOF_SIGNALS] = {0,11,23,35,47,59,71,83,95,107,
-                                                           131,143,155,167,179,191,203,215,227,
-                                                           251,263,275,287,299,311,323,335,347,
-                                                           371,383,395,407,419,431,443,455,467,
-                                                           491,503,515,527,539,551,563,575,587,
-                                                           611,623,635,647,659,671,683,695,707,
-                                                           731,743,755,767,779,791,803,815,827,
-                                                           851,863,875,887,899,0,0,0,0,
-                                                           0,0,0,0,0,0,0,0,0,
-                                                           0,0,0,0,0,0,0,0,0,
-                                                           0,0,0,0,0,0,0,0,0,
-                                                           0,0,0,0,0,0,0,0,0,
-                                                           0,0,0,0,0,0,0,0,0,
-                                                           0,0,0,0,0,0,0,0,0,
-                                                           0,0,0,0,0,0,0,0,0};
+const unsigned char v_triangular [] = {0,2,5,7,10,12,15,17,20,22,
+                                     28,30,33,35,38,40,43,45,48,
+                                     53,56,58,61,63,66,68,71,73,
+                                     79,81,84,86,89,91,94,96,99,
+                                     104,107,109,112,114,117,119,122,124,
+                                     130,132,135,137,140,142,145,147,150,
+                                     155,158,160,163,165,168,170,173,175,
+                                     181,183,186,188,191,193,196,198,201,
+                                     206,209,211,214,216,219,221,224,226,
+                                     232,234,237,239,242,244,247,249,252,
+                                     252,249,247,244,242,239,237,234,232,
+                                     226,224,221,219,216,214,211,209,206,
+                                     201,198,196,193,191,188,186,183,181,
+                                     175,173,170,168,165,163,160,158,155,
+                                     150,147,145,142,140,137,135,132,130,
+                                     124,122,119,117,114,112,109,107,104,
+                                     99,96,94,91,89,86,84,81,79,
+                                     73,71,68,66,63,61,58,56,53,
+                                     48,45,43,40,38,35,33,30,28,
+                                     22,20,17,15,12,10,7,5,2};
 
 
 //--- FUNCIONES DEL MODULO ---//
@@ -166,7 +123,10 @@ void TreatmentManager (void)
                 }
 
                 if (signal_to_gen.signal == MODULATED_SIGNAL)
+                {
+                    modulated_state = INIT_MODULATED;
                     treatment_state = TREATMENT_GENERATING_MODULATED;
+                }
 
                 ChangeLed(LED_TREATMENT_GENERATING);
             }
@@ -216,7 +176,7 @@ void TreatmentManager (void)
             //Cosas que dependen de las muestras
             //se la puede llamar las veces que sea necesario y entre funciones, para acelerar
             //la respuesta
-            GenerateSignalCWave();
+            GenerateSignalModulated();
 
 #ifdef USE_SOFT_OVERCURRENT
             //TODO: poner algun synchro con muestras para que no ejecute el filtro todo el tiempo
@@ -365,15 +325,6 @@ resp_t SetSignalType (signal_type_t a)
     if ((treatment_state != TREATMENT_INIT_FIRST_TIME) && (treatment_state != TREATMENT_STANDBY))
         return resp_error;
 
-    if (a == CWAVE_SIGNAL)
-        p_signal = (unsigned short *) s_cuadrada_1_5A;
-
-    if (a == PULSED_SIGNAL)
-        p_signal = (unsigned short *) s_triangular_1_5A;    
-
-    if (a == MODULATED_SIGNAL)
-        p_signal = (unsigned short *) s_senoidal_1_5A;
-
     signal_to_gen.signal = a;
 
     return resp_ok;
@@ -391,54 +342,26 @@ resp_t SetPowerLed (unsigned char ch, unsigned char a)
 {
     if (ch == 0x0F)
     {              
-        if (a > 100)
-        {            
-            signal_to_gen.ch1_power_led = 100;
-            signal_to_gen.ch2_power_led = 100;
-            signal_to_gen.ch3_power_led = 100;
-            signal_to_gen.ch4_power_led = 100;
-        }
-        else
-        {
+        signal_to_gen.ch1_power_led = a;
+        signal_to_gen.ch2_power_led = a;
+        signal_to_gen.ch3_power_led = a;
+        signal_to_gen.ch4_power_led = a;
+    }
+    else
+    {
+        if (ch == 1)
             signal_to_gen.ch1_power_led = a;
+
+        if (ch == 2)
             signal_to_gen.ch2_power_led = a;
+
+        if (ch == 3)
             signal_to_gen.ch3_power_led = a;
-            signal_to_gen.ch4_power_led = a;
-        }
-    }
 
-    if (ch == 1)
-    {              
-        if (a > 100)
-            signal_to_gen.ch1_power_led = 100;
-        else
-            signal_to_gen.ch1_power_led = a;
-    }
-
-    if (ch == 2)
-    {              
-        if (a > 100)
-            signal_to_gen.ch2_power_led = 100;
-        else
-            signal_to_gen.ch2_power_led = a;
-    }
-
-    if (ch == 3)
-    {              
-        if (a > 100)
-            signal_to_gen.ch3_power_led = 100;
-        else
-            signal_to_gen.ch3_power_led = a;
-    }
-
-    if (ch == 4)
-    {              
-        if (a > 100)
-            signal_to_gen.ch4_power_led = 100;
-        else
+        if (ch == 4)
             signal_to_gen.ch4_power_led = a;
     }
-
+    
     return resp_ok;
 }
 
@@ -446,51 +369,23 @@ resp_t SetPowerLaser (unsigned char ch, unsigned char a)
 {
     if (ch == 0x0F)
     {              
-        if (a > 100)
-        {            
-            signal_to_gen.ch1_power_laser = 100;
-            signal_to_gen.ch2_power_laser = 100;
-            signal_to_gen.ch3_power_laser = 100;
-            signal_to_gen.ch4_power_laser = 100;
-        }
-        else
-        {
+        signal_to_gen.ch1_power_laser = a;
+        signal_to_gen.ch2_power_laser = a;
+        signal_to_gen.ch3_power_laser = a;
+        signal_to_gen.ch4_power_laser = a;
+    }
+    else
+    {
+        if (ch == 1)
             signal_to_gen.ch1_power_laser = a;
+
+        if (ch == 2)
             signal_to_gen.ch2_power_laser = a;
+
+        if (ch == 3)
             signal_to_gen.ch3_power_laser = a;
-            signal_to_gen.ch4_power_laser = a;
-        }
-    }
 
-    if (ch == 1)
-    {              
-        if (a > 100)
-            signal_to_gen.ch1_power_laser = 100;
-        else
-            signal_to_gen.ch1_power_laser = a;
-    }
-
-    if (ch == 2)
-    {              
-        if (a > 100)
-            signal_to_gen.ch2_power_laser = 100;
-        else
-            signal_to_gen.ch2_power_laser = a;
-    }
-
-    if (ch == 3)
-    {              
-        if (a > 100)
-            signal_to_gen.ch3_power_laser = 100;
-        else
-            signal_to_gen.ch3_power_laser = a;
-    }
-
-    if (ch == 4)
-    {              
-        if (a > 100)
-            signal_to_gen.ch4_power_laser = 100;
-        else
+        if (ch == 4)
             signal_to_gen.ch4_power_laser = a;
     }
 
@@ -501,16 +396,6 @@ resp_t SetPowerLaser (unsigned char ch, unsigned char a)
 resp_t AssertTreatmentParams (void)
 {
     resp_t resp = resp_error;
-
-    if ((signal_to_gen.ch1_power_led > 100) ||
-        (signal_to_gen.ch2_power_led > 100) ||
-        (signal_to_gen.ch3_power_led > 100) ||
-        (signal_to_gen.ch4_power_led > 100) ||
-        (signal_to_gen.ch1_power_laser > 100) ||
-        (signal_to_gen.ch2_power_laser > 100) ||
-        (signal_to_gen.ch3_power_laser > 100) ||
-        (signal_to_gen.ch4_power_laser > 100))
-        return resp;
 
     if (signal_to_gen.frequency > 9)
         return resp;
@@ -530,14 +415,14 @@ void SendAllConf (void)
     Usart1Send(b);
     sprintf(b, "freq: %d\n", signal_to_gen.frequency);
     Usart1Send(b);
-    sprintf(b, "ch led power: %d, %d, %d, %d\n",
+    sprintf(b, "ch power led: %d, %d, %d, %d\n",
             signal_to_gen.ch1_power_led,
             signal_to_gen.ch2_power_led,
             signal_to_gen.ch3_power_led,
             signal_to_gen.ch4_power_led);
     
     Usart1Send(b);
-    sprintf(b, "ch laser power: %d, %d, %d, %d\n",
+    sprintf(b, "ch power laser: %d, %d, %d, %d\n",
             signal_to_gen.ch1_power_laser,
             signal_to_gen.ch2_power_laser,
             signal_to_gen.ch3_power_laser,
@@ -550,27 +435,17 @@ void SendAllConf (void)
 //la llama el manager para generar las seniales CWAVE en los canales
 void GenerateSignalCWave (void)
 {
-    unsigned short dummy;
-    
     switch (cwave_state)
     {
         case (INIT_CWAVE):
             //por ahora solo laser
-            dummy = signal_to_gen.ch1_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh1(dummy);
+            UpdateLaserCh1(signal_to_gen.ch1_power_laser);
 
-            dummy = signal_to_gen.ch2_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh2(dummy);
+            UpdateLaserCh2(signal_to_gen.ch2_power_laser);
 
-            dummy = signal_to_gen.ch3_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh3(dummy);
+            UpdateLaserCh3(signal_to_gen.ch3_power_laser);
 
-            dummy = signal_to_gen.ch4_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh4(dummy);
+            UpdateLaserCh4(signal_to_gen.ch4_power_laser);
 
             cwave_state = GEN_CWAVE;
             timer_signals_gen = 1000;    //cada 1 seg reviso potencias
@@ -593,27 +468,17 @@ void GenerateSignalCWave (void)
 //dependen de la freq
 void GenerateSignalPulsed (void)
 {
-    unsigned short dummy;
-    
     switch (pulsed_state)
     {
         case (INIT_PULSED):
             //por ahora solo laser
-            dummy = signal_to_gen.ch1_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh1(dummy);
+            UpdateLaserCh1(signal_to_gen.ch1_power_laser);
 
-            dummy = signal_to_gen.ch2_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh2(dummy);
+            UpdateLaserCh2(signal_to_gen.ch2_power_laser);
 
-            dummy = signal_to_gen.ch3_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh3(dummy);
+            UpdateLaserCh3(signal_to_gen.ch3_power_laser);
 
-            dummy = signal_to_gen.ch4_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh4(dummy);
+            UpdateLaserCh4(signal_to_gen.ch4_power_laser);
 
             if (signal_to_gen.frequency == 0)
                 timer_signals_gen = 50;
@@ -656,61 +521,64 @@ void GenerateSignalPulsed (void)
 //dependen de la freq
 void GenerateSignalModulated (void)
 {
-    unsigned short dummy;
+    unsigned short dummy, dummy2;
     
     switch (modulated_state)
     {
-        case (INIT_PULSED):
+        case (INIT_MODULATED):
             //por ahora solo laser
-            dummy = signal_to_gen.ch1_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh1(dummy);
+            UpdateLaserCh1(0);
 
-            dummy = signal_to_gen.ch2_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh2(dummy);
+            UpdateLaserCh2(0);
 
-            dummy = signal_to_gen.ch3_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh3(dummy);
+            UpdateLaserCh3(0);
 
-            dummy = signal_to_gen.ch4_power_laser * 255;
-            dummy = dummy / 100;
-            UpdateLaserCh4(dummy);
+            UpdateLaserCh4(0);
 
-            if (signal_to_gen.frequency == 0)
-                timer_signals_gen = 50;
-            else
-                timer_signals_gen = 1000 / (signal_to_gen.frequency * 2);
-
-            pulsed_state = GEN_PULSED;            
+            modulated_index = 0;
+            timer_signals_gen = 5;
+            modulated_state = GEN_MODULATION;            
             break;
-
-        case GEN_PULSED:
+           
+        case GEN_MODULATION:
             if (!timer_signals_gen)
             {
-                UpdateLaserCh1((signal_to_gen.ch1_power_laser) >> 1);
-                UpdateLaserCh2((signal_to_gen.ch2_power_laser) >> 1);
-                UpdateLaserCh3((signal_to_gen.ch3_power_laser) >> 1);
-                UpdateLaserCh4((signal_to_gen.ch4_power_laser) >> 1);
                 if (signal_to_gen.frequency == 0)
-                    timer_signals_gen = 50;
+                    modulated_index += 10;
                 else
-                    timer_signals_gen = 1000 / (signal_to_gen.frequency * 2);
+                    modulated_index += signal_to_gen.frequency;
 
-                pulsed_state = NO_GEN_PULSED;
+                if (modulated_index < sizeof(v_triangular))
+                {
+                    dummy = v_triangular[modulated_index];
+                    
+                    dummy2 = signal_to_gen.ch1_power_laser * dummy;
+                    dummy2 >>= 8;
+                    UpdateLaserCh1(dummy2);
+
+                    dummy2 = signal_to_gen.ch2_power_laser * dummy;
+                    dummy2 >>= 8;
+                    UpdateLaserCh2(dummy2);
+
+                    dummy2 = signal_to_gen.ch3_power_laser * dummy;
+                    dummy2 >>= 8;
+                    UpdateLaserCh3(dummy2);
+
+                    dummy2 = signal_to_gen.ch4_power_laser * dummy;
+                    dummy2 >>= 8;
+                    UpdateLaserCh4(dummy2);
+
+                    timer_signals_gen = 5;
+                }
+                else
+                    modulated_state = INIT_MODULATED; 
+
             }
             break;
 
-        case NO_GEN_PULSED:
-            if (!timer_signals_gen)
-                pulsed_state = INIT_PULSED;
-            
-            break;
-        
         default:
             //si me llaman y estoy en cualquiera igual genero
-            pulsed_state = INIT_PULSED;
+            modulated_state = INIT_MODULATED;
             break;            
     }
 }

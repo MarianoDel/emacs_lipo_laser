@@ -70,6 +70,13 @@ typedef enum
 
 } pulsed_state_t;
 
+typedef enum
+{
+    INIT_MODULATED = 0,
+    GEN_MODULATION
+    
+} modulated_state_t;
+
 
 //--- Exported constants ---//
 
