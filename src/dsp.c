@@ -216,7 +216,7 @@ short PID (short setpoint, short sample)
 	return d;
 }
 
-short PID_roof (short setpoint, short sample, short local_last_d)
+short PID_roof (short setpoint, short sample, short local_last_d, short * e_z1, short * e_z2)
 {
 	short error = 0;
 	short d = 0;
@@ -232,18 +232,18 @@ short PID_roof (short setpoint, short sample, short local_last_d)
 	val_k1 = acc >> 7;
 
 	//K2
-	acc = K2I * error_z1;		//K2 = no llega pruebo con 1
+	acc = K2I * *e_z1;		//K2 = no llega pruebo con 1
 	val_k2 = acc >> 7;			//si es mas grande que K1 + K3 no lo deja arrancar
 
 	//K3
-	acc = K3I * error_z2;		//K3 = 0.4
+	acc = K3I * *e_z2;		//K3 = 0.4
 	val_k3 = acc >> 7;
 
 	d = local_last_d + val_k1 - val_k2 + val_k3;
 
 	//Update variables PID
-	error_z2 = error_z1;
-	error_z1 = error;
+	*e_z2 = *e_z1;
+	*e_z1 = error;
 
 	return d;
 }

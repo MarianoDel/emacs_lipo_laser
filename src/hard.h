@@ -27,7 +27,7 @@
 
 
 //---- Configuration for Firmware-Programs --------
-
+#define TEST_ONLY_CH2    //prueba pid solo canal 2, tambien modifica adc y muestreo
 
 //-------- Configuration for Outputs-Firmware ------
 

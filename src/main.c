@@ -119,7 +119,10 @@ int main(void)
     {        
         TreatmentManager();
         UpdateCommunications();
+#ifndef TEST_ONLY_CH2        
         UpdateLed();
+#endif
+        
     }
     //fin prueba modulo signals.c comm.c tim.c adc.c
 

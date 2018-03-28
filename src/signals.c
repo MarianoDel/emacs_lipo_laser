@@ -40,10 +40,22 @@ modulated_state_t modulated_state = INIT_MODULATED;
 unsigned char modulated_index;
 
 unsigned char global_error = 0;
-short d_ch1 = 0;
-short d_ch2 = 0;
-short d_ch3 = 0;
-short d_ch4 = 0;
+//valores globales para los 4 PIDs
+short d_ch1;
+short d_ch2;
+short d_ch3;
+short d_ch4;
+
+short e_z1_ch1;
+short e_z1_ch2;
+short e_z1_ch3;
+short e_z1_ch4;
+
+short e_z2_ch1;
+short e_z2_ch2;
+short e_z2_ch3;
+short e_z2_ch4;
+
 unsigned char undersampling;
 
 //-- para determinacion de soft overcurrent ------------
@@ -53,7 +65,7 @@ unsigned short soft_overcurrent_index = 0;
 
 
 //Signals Templates
-#define I_MAX 36
+#define I_MAX 195    //0.35A x 1.8ohms cuantizado 1023 puntos
 
 const unsigned char v_triangular [] = {0,2,5,7,10,12,15,17,20,22,
                                      28,30,33,35,38,40,43,45,48,
@@ -219,50 +231,6 @@ void TreatmentManager (void)
             break;
     }
 }
-
-// void TreatmentManager_IntSpeed (void)
-// {
-//     switch (treatment_state)
-//     {
-//     case TREATMENT_INIT_FIRST_TIME:
-//         HIGH_LEFT_PWM(0);
-//         LOW_LEFT_PWM(0);
-//         HIGH_RIGHT_PWM(0);
-//         LOW_RIGHT_PWM(DUTY_ALWAYS);
-
-//         if (GetErrorStatus() == ERROR_OK)
-//         {
-//             discharge_state = INIT_DISCHARGE;
-//             treatment_state = TREATMENT_GENERATING;
-//             LED_OFF;
-//             EXTIOn();
-//         }
-//         break;
-
-//     case TREATMENT_GENERATING:
-//         //Cosas que dependen de las muestras
-//         //se la puede llamar las veces que sea necesario y entre funciones, para acelerar
-//         //la respuesta
-//         GenerateSignal();
-
-//         break;
-
-//     case TREATMENT_STOPPING2:		//aca lo manda directamente la int
-//         if (!timer_signals)
-//         {
-//             treatment_state = TREATMENT_INIT_FIRST_TIME;
-//             EXTIOff();
-//             ENABLE_TIM3;
-//             LED_OFF;
-//             SetErrorStatus(ERROR_FLUSH_MASK);
-//         }
-//         break;
-
-//     default:
-//         treatment_state = TREATMENT_INIT_FIRST_TIME;
-//         break;
-//     }
-// }
 
 treatment_t GetTreatmentState (void)
 {
@@ -444,7 +412,30 @@ void GenerateSignalCWave (void)
     switch (cwave_state)
     {
         case INIT_CWAVE:
-            //por ahora solo laser
+
+            undersampling = UNDERSAMPLING_TICKS;    //para que arranque pid
+            d_ch1 = 0;
+            e_z1_ch1 = 0;
+            e_z2_ch1 = 0;
+
+            d_ch2 = 0;
+            e_z1_ch2 = 0;
+            e_z2_ch2 = 0;
+
+            d_ch3 = 0;
+            e_z1_ch3 = 0;
+            e_z2_ch3 = 0;
+
+            d_ch4 = 0;
+            e_z1_ch4 = 0;
+            e_z2_ch4 = 0;
+
+            cwave_state = UPDATE_POWER_CWAVE;
+            break;
+
+        case UPDATE_POWER_CWAVE:
+            //la potencia de los leds entra sola en el loop
+            //la de los lasers hago aca el update
             UpdateLaserCh1(signal_to_gen.ch1_power_laser);
 
             UpdateLaserCh2(signal_to_gen.ch2_power_laser);
@@ -454,37 +445,50 @@ void GenerateSignalCWave (void)
             UpdateLaserCh4(signal_to_gen.ch4_power_laser);
 
             cwave_state = GEN_CWAVE;
-            timer_signals_gen = 1000;    //cada 1 seg reviso potencias
-
-            //TODO: reviar esto, no volver a 0
-            undersampling = 5;    //para que arranque pid
-            d_ch1 = 0;
+            timer_signals_gen = 1000;    //cada 1 seg reviso potencias de los lasers            
             break;
-
+            
         case GEN_CWAVE:
             //secuencia de lasers
             if (!timer_signals_gen)
-                cwave_state = INIT_CWAVE;
+                cwave_state = UPDATE_POWER_CWAVE;
 
             //secuencia de leds
             if (seq_ready)
             {
                 seq_ready = 0;
-                if (undersampling < 5)
+                if (undersampling < UNDERSAMPLING_TICKS)
                     undersampling++;
                 else
                 {
+#ifdef TEST_ONLY_CH2
+                    //PID CH2                    
+                    dummy = signal_to_gen.ch2_power_led * I_MAX;
+                    dummy >>= 8;
+                    d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+
+                    if (d_ch2 < 0)
+                        d_ch2 = 0;
+                    else
+                    {
+                        if (d_ch2 > DUTY_70_PERCENT)
+                            d_ch2 = DUTY_70_PERCENT;
+
+                        Update_TIM3_CH2(d_ch2);
+                    }
+#else
+                    
                     //PID CH1
                     dummy = signal_to_gen.ch1_power_led * I_MAX;
                     dummy >>= 8;
-                    d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1);
+                    d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
 
                     if (d_ch1 < 0)
                         d_ch1 = 0;
                     else
                     {
-                        if (d_ch1 > DUTY_50_PERCENT)
-                            d_ch1 = DUTY_50_PERCENT;
+                        if (d_ch1 > DUTY_70_PERCENT)
+                            d_ch1 = DUTY_70_PERCENT;
 
                         Update_TIM3_CH1(d_ch1);
                     }
@@ -492,14 +496,14 @@ void GenerateSignalCWave (void)
                     //PID CH2
                     dummy = signal_to_gen.ch2_power_led * I_MAX;
                     dummy >>= 8;
-                    d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2);
+                    d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
 
                     if (d_ch2 < 0)
                         d_ch2 = 0;
                     else
                     {
-                        if (d_ch2 > DUTY_50_PERCENT)
-                            d_ch2 = DUTY_50_PERCENT;
+                        if (d_ch2 > DUTY_70_PERCENT)
+                            d_ch2 = DUTY_70_PERCENT;
 
                         Update_TIM3_CH2(d_ch2);
                     }
@@ -507,14 +511,14 @@ void GenerateSignalCWave (void)
                     //PID CH3
                     dummy = signal_to_gen.ch3_power_led * I_MAX;
                     dummy >>= 8;
-                    d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3);
+                    d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
 
                     if (d_ch3 < 0)
                         d_ch3 = 0;
                     else
                     {
-                        if (d_ch3 > DUTY_50_PERCENT)
-                            d_ch3 = DUTY_50_PERCENT;
+                        if (d_ch3 > DUTY_70_PERCENT)
+                            d_ch3 = DUTY_70_PERCENT;
 
                         Update_TIM3_CH3(d_ch3);
                     }
@@ -522,18 +526,18 @@ void GenerateSignalCWave (void)
                     //PID CH4
                     dummy = signal_to_gen.ch4_power_led * I_MAX;
                     dummy >>= 8;
-                    d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4);
+                    d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
 
                     if (d_ch4 < 0)
                         d_ch4 = 0;
                     else
                     {
-                        if (d_ch4 > DUTY_50_PERCENT)
-                            d_ch4 = DUTY_50_PERCENT;
+                        if (d_ch4 > DUTY_70_PERCENT)
+                            d_ch4 = DUTY_70_PERCENT;
 
                         Update_TIM3_CH4(d_ch4);
                     }
-                    
+#endif
                 }
             }
             break;

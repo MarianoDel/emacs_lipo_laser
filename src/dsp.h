@@ -19,7 +19,7 @@ unsigned short MAFilter32 (unsigned short, unsigned short *);
 unsigned short MAFilter32Circular (unsigned short, unsigned short *, unsigned char *, unsigned int *);
 
 short PID (short, short);
-short PID_roof (short, short, short);
+short PID_roof (short, short, short, short *, short *);
 
 
 

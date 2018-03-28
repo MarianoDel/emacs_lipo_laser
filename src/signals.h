@@ -58,6 +58,7 @@ typedef struct {
 typedef enum
 {
     INIT_CWAVE = 0,
+    UPDATE_POWER_CWAVE,
     GEN_CWAVE
 
 } cwave_state_t;
@@ -81,6 +82,7 @@ typedef enum
 //--- Exported constants ---//
 
 //--- Exported macro ---//
+#define UNDERSAMPLING_TICKS    10
 #define SIZEOF_SIGNALS		150
 
 #define ERROR_OVERCURRENT_MASK			0x01

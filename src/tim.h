@@ -21,6 +21,7 @@
 //--- Exported constants ---//
 #define DUTY_50_PERCENT		500
 #define DUTY_80_PERCENT		800
+#define DUTY_70_PERCENT		700
 #define DUTY_95_PERCENT		950
 #define DUTY_100_PERCENT	1000
 #define DUTY_ALWAYS			(DUTY_100_PERCENT + 1)
