@@ -37,6 +37,7 @@ volatile unsigned char timer_1seg = 0;
 volatile unsigned short timer_signals = 0;
 volatile unsigned short timer_signals_gen = 0;
 volatile unsigned short timer_led = 0;
+volatile unsigned short timer_buzzer = 0;
 
 // ------- Externals del USART -------
 volatile unsigned char usart1_have_data;
@@ -65,15 +66,8 @@ extern void EXTI4_15_IRQHandler(void);
 int main(void)
 {
     unsigned short i = 0;
-    unsigned char main_state = 0;
-
-    char s_to_senda [100];
-    char s_to_sendb [100];
-    
-    unsigned char bytes_readed = 0;
-    unsigned char last_program, last_program_deep;
-    unsigned short last_channel;
-    unsigned short current_temp = 0;
+    // char s_to_senda [100];    
+    // unsigned char bytes_readed = 0;
 
     //GPIO Configuration.
     GPIO_Config();
@@ -119,43 +113,40 @@ int main(void)
     {        
         TreatmentManager();
         UpdateCommunications();
-#ifndef TEST_ONLY_CH2        
         UpdateLed();
-#endif
-        
+        UpdateBuzzer();
     }
     //fin prueba modulo signals.c comm.c tim.c adc.c
 
     //prueba modulo adc.c tim.c e int adc
-    TIM_3_Init();
-    Update_TIM3_CH1(511);
-    Update_TIM3_CH2(0);
-    Update_TIM3_CH3(0);
-    Update_TIM3_CH4(0);
+    // TIM_3_Init();
+    // Update_TIM3_CH1(511);
+    // Update_TIM3_CH2(0);
+    // Update_TIM3_CH3(0);
+    // Update_TIM3_CH4(0);
 
-    AdcConfig();
-    ADC1->CR |= ADC_CR_ADSTART;
+    // AdcConfig();
+    // ADC1->CR |= ADC_CR_ADSTART;
     
-    while (1)
-    {
-        if (seq_ready)
-        {
-            seq_ready = 0;
-            if (LED)
-                LED_OFF;
-            else
-                LED_ON;
-        }
-    }               
+    // while (1)
+    // {
+    //     if (seq_ready)
+    //     {
+    //         seq_ready = 0;
+    //         if (LED)
+    //             LED_OFF;
+    //         else
+    //             LED_ON;
+    //     }
+    // }               
     //fin prueba modulo adc.c tim.c e int adc
 
     //prueba modulo comm.c
-    USART1Config();
-    while (1)
-    {
-        UpdateCommunications();
-    }
-
+    // USART1Config();
+    // while (1)
+    // {
+    //     UpdateCommunications();
+    // }
     // fin prueba modulo comm.c
         
     // //prueba PWM con TIM3
@@ -209,151 +200,76 @@ int main(void)
     // fin prueba int timer 14 y SOFT_PWM
 
     //prueba loop (Tx - Rx) en usart1
-    USART1Config();
-    while (1)
-    {
-        if (usart1_have_data)
-        {
-            usart1_have_data = 0;
-            bytes_readed = ReadUsart1Buffer((unsigned char *) s_to_senda, sizeof(s_to_senda));
+    // USART1Config();
+    // while (1)
+    // {
+    //     if (usart1_have_data)
+    //     {
+    //         usart1_have_data = 0;
+    //         bytes_readed = ReadUsart1Buffer((unsigned char *) s_to_senda, sizeof(s_to_senda));
 
-            if ((bytes_readed + 1) < sizeof(s_to_senda))
-            {
-                *(s_to_senda + bytes_readed - 1) = '\n';
-                *(s_to_senda + bytes_readed) = '\0';
-                timer_standby = 1000;
-            }
+    //         if ((bytes_readed + 1) < sizeof(s_to_senda))
+    //         {
+    //             *(s_to_senda + bytes_readed - 1) = '\n';
+    //             *(s_to_senda + bytes_readed) = '\0';
+    //             timer_standby = 1000;
+    //         }
 
-            if (LED)
-                LED_OFF;
-            else
-                LED_ON;
-        }
+    //         if (LED)
+    //             LED_OFF;
+    //         else
+    //             LED_ON;
+    //     }
 
-        if ((!timer_standby) && (bytes_readed > 0))
-        {
-            bytes_readed = 0;
-            Usart1Send(s_to_senda);
-        }
-    }
+    //     if ((!timer_standby) && (bytes_readed > 0))
+    //     {
+    //         bytes_readed = 0;
+    //         Usart1Send(s_to_senda);
+    //     }
+    // }
     //fin prueba loop (Tx - Rx) en usart1
 
     //Prueba USART TX
-    USART1Config();
+    // USART1Config();
 
-    while (1)
-    {
-        LED_ON;
-        Usart1Send("prueba\n");
-        Wait_ms(100);
-        LED_OFF;
-        Wait_ms(1900);
-    }
+    // while (1)
+    // {
+    //     LED_ON;
+    //     Usart1Send("prueba\n");
+    //     Wait_ms(100);
+    //     LED_OFF;
+    //     Wait_ms(1900);
+    // }
     //Fin Prueba USART TX
 
     //PRUEBA LED Y BUZZER
-    while (1)
-    {
-        if (BUZZER)
-        {
-            LED_OFF;
-            BUZZER_OFF;
-        }
-        else
-        {
-            LED_ON;
-            BUZZER_ON;
-        }
-        Wait_ms(200);
+    // while (1)
+    // {
+    //     if (BUZZER)
+    //     {
+    //         LED_OFF;
+    //         BUZZER_OFF;
+    //     }
+    //     else
+    //     {
+    //         LED_ON;
+    //         BUZZER_ON;
+    //     }
+    //     Wait_ms(200);
 
-        // LED_ON;
-        // BUZZER_ON;
-        // Wait_ms(150);
-        // LED_OFF;
-        // BUZZER_OFF;
-        // Wait_ms(2000);
-    }
+    //     // LED_ON;
+    //     // BUZZER_ON;
+    //     // Wait_ms(150);
+    //     // LED_OFF;
+    //     // BUZZER_OFF;
+    //     // Wait_ms(2000);
+    // }
     //FIN PRUEBA LED Y BUZZER
 
 
     return 0;
 }
-
-
 //--- End of Main ---//
-
-// void EXTI4_15_IRQHandler(void)		//nueva detecta el primer 0 en usart Consola PHILIPS
-// {
-// 	unsigned short aux;
-
-// 	if(EXTI->PR & 0x0100)	//Line8
-// 	{
-// 		//si no esta con el USART detecta el flanco	PONER TIMEOUT ACA?????
-// 		if ((dmx_receive_flag == 0) || (dmx_timeout_timer == 0))
-// 		//if (dmx_receive_flag == 0)
-// 		{
-// 			switch (signal_state)
-// 			{
-// 				case IDLE:
-// 					if (!(DMX_INPUT))
-// 					{
-// 						//Activo timer en Falling.
-// 						TIM14->CNT = 0;
-// 						TIM14->CR1 |= 0x0001;
-// 						signal_state++;
-// 					}
-// 					break;
-
-// 				case LOOK_FOR_BREAK:
-// 					if (DMX_INPUT)
-// 					{
-// 						//Desactivo timer en Rising.
-// 						aux = TIM14->CNT;
-
-// 						//reviso BREAK
-// 						//if (((tim_counter_65ms) || (aux > 88)) && (tim_counter_65ms <= 20))
-// 						//if ((aux > 87) && (aux < 210))	//Consola STARLET 6
-// 						//if ((aux > 87) && (aux < 2000))		//Consola marca CODE tiene break 1.88ms
-// 						if ((aux > 87) && (aux < 4600))		//Consola marca CODE modelo A24 tiene break 4.48ms fecha 11-04-17
-// 						{
-// 							//LED_ON;		//TODO: apaga para pruebas
-// 							signal_state++;
-// 							DMX_channel_received = 0;
-// 							dmx_timeout_timer = DMX_TIMEOUT;		//activo el timeout para esperar un MARK valido
-// 						}
-// 						else	//falso disparo
-// 							signal_state = IDLE;
-// 					}
-// 					else	//falso disparo
-// 						signal_state = IDLE;
-
-// 					TIM14->CR1 &= 0xFFFE;
-// 					break;
-
-// 				case LOOK_FOR_MARK:
-// 					if ((!(DMX_INPUT)) && (dmx_timeout_timer))	//termino Mark after break
-// 					{
-// 						//ya tenia el serie habilitado
-// 						dmx_receive_flag = 1;
-// 						LED_ON;
-// 					}
-// 					else	//falso disparo
-// 					{
-// 						//termine por timeout
-// 						dmx_receive_flag = 0;
-// 					}
-// 					signal_state = IDLE;
-// 					//LED_OFF;						//TODO: apaga para pruebas
-// 					break;
-
-// 				default:
-// 					signal_state = IDLE;
-// 					break;
-// 			}
-// 		}
-// 		EXTI->PR |= 0x0100;
-// 	}
-// }
 
 void TimingDelay_Decrement(void)
 {
@@ -371,4 +287,11 @@ void TimingDelay_Decrement(void)
 
     if (timer_led)
         timer_led--;
+
+    if (timer_buzzer)
+        timer_buzzer--;
+
 }
+
+//--- end of file ---//
+

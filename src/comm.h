@@ -1,6 +1,6 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef COMM_H_
-#define COMM_H_
+#ifndef _COMM_H_
+#define _COMM_H_
 
 
 //--- Exported types ---//

@@ -57,6 +57,10 @@ short e_z2_ch3;
 short e_z2_ch4;
 
 unsigned char undersampling;
+unsigned short mod_SP_ch1;
+unsigned short mod_SP_ch2;
+unsigned short mod_SP_ch3;
+unsigned short mod_SP_ch4;
 
 //-- para determinacion de soft overcurrent ------------
 unsigned short soft_overcurrent_max_current_in_cycles [SIZEOF_OVERCURRENT_BUFF];
@@ -437,11 +441,8 @@ void GenerateSignalCWave (void)
             //la potencia de los leds entra sola en el loop
             //la de los lasers hago aca el update
             UpdateLaserCh1(signal_to_gen.ch1_power_laser);
-
             UpdateLaserCh2(signal_to_gen.ch2_power_laser);
-
             UpdateLaserCh3(signal_to_gen.ch3_power_laser);
-
             UpdateLaserCh4(signal_to_gen.ch4_power_laser);
 
             cwave_state = GEN_CWAVE;
@@ -461,23 +462,6 @@ void GenerateSignalCWave (void)
                     undersampling++;
                 else
                 {
-#ifdef TEST_ONLY_CH2
-                    //PID CH2                    
-                    dummy = signal_to_gen.ch2_power_led * I_MAX;
-                    dummy >>= 8;
-                    d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
-
-                    if (d_ch2 < 0)
-                        d_ch2 = 0;
-                    else
-                    {
-                        if (d_ch2 > DUTY_70_PERCENT)
-                            d_ch2 = DUTY_70_PERCENT;
-
-                        Update_TIM3_CH2(d_ch2);
-                    }
-#else
-                    
                     //PID CH1
                     dummy = signal_to_gen.ch1_power_led * I_MAX;
                     dummy >>= 8;
@@ -537,9 +521,8 @@ void GenerateSignalCWave (void)
 
                         Update_TIM3_CH4(d_ch4);
                     }
-#endif
-                }
-            }
+                }    //end undersampling
+            }    //end sequence ready
             break;
 
         default:
@@ -554,6 +537,8 @@ void GenerateSignalCWave (void)
 //dependen de la freq
 void GenerateSignalPulsed (void)
 {
+    unsigned short dummy;
+    
     switch (pulsed_state)
     {
         case INIT_PULSED:
@@ -566,6 +551,23 @@ void GenerateSignalPulsed (void)
 
             UpdateLaserCh4(signal_to_gen.ch4_power_laser);
 
+            undersampling = UNDERSAMPLING_TICKS;    //para que arranque pid
+            d_ch1 = 0;
+            e_z1_ch1 = 0;
+            e_z2_ch1 = 0;
+
+            d_ch2 = 0;
+            e_z1_ch2 = 0;
+            e_z2_ch2 = 0;
+
+            d_ch3 = 0;
+            e_z1_ch3 = 0;
+            e_z2_ch3 = 0;
+
+            d_ch4 = 0;
+            e_z1_ch4 = 0;
+            e_z2_ch4 = 0;
+            
             if (signal_to_gen.frequency == 0)
                 timer_signals_gen = 50;
             else
@@ -581,12 +583,90 @@ void GenerateSignalPulsed (void)
                 UpdateLaserCh2(0);
                 UpdateLaserCh3(0);
                 UpdateLaserCh4(0);
+
+                Update_TIM3_CH1(0);
+                Update_TIM3_CH2(0);
+                Update_TIM3_CH3(0);
+                Update_TIM3_CH4(0);
+                
                 if (signal_to_gen.frequency == 0)
                     timer_signals_gen = 50;
                 else
                     timer_signals_gen = 1000 / (signal_to_gen.frequency * 2);
 
                 pulsed_state = NO_GEN_PULSED;
+            }
+            else
+            {
+                //secuencia de leds
+                if (seq_ready)
+                {
+                    seq_ready = 0;
+                    if (undersampling < UNDERSAMPLING_TICKS)
+                        undersampling++;
+                    else
+                    {
+                        //PID CH1
+                        dummy = signal_to_gen.ch1_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+
+                        if (d_ch1 < 0)
+                            d_ch1 = 0;
+                        else
+                        {
+                            if (d_ch1 > DUTY_70_PERCENT)
+                                d_ch1 = DUTY_70_PERCENT;
+
+                            Update_TIM3_CH1(d_ch1);
+                        }
+
+                        //PID CH2
+                        dummy = signal_to_gen.ch2_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+
+                        if (d_ch2 < 0)
+                            d_ch2 = 0;
+                        else
+                        {
+                            if (d_ch2 > DUTY_70_PERCENT)
+                                d_ch2 = DUTY_70_PERCENT;
+
+                            Update_TIM3_CH2(d_ch2);
+                        }
+
+                        //PID CH3
+                        dummy = signal_to_gen.ch3_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+
+                        if (d_ch3 < 0)
+                            d_ch3 = 0;
+                        else
+                        {
+                            if (d_ch3 > DUTY_70_PERCENT)
+                                d_ch3 = DUTY_70_PERCENT;
+
+                            Update_TIM3_CH3(d_ch3);
+                        }
+
+                        //PID CH4
+                        dummy = signal_to_gen.ch4_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+
+                        if (d_ch4 < 0)
+                            d_ch4 = 0;
+                        else
+                        {
+                            if (d_ch4 > DUTY_70_PERCENT)
+                                d_ch4 = DUTY_70_PERCENT;
+
+                            Update_TIM3_CH4(d_ch4);
+                        }
+                    }    //end of undersampling
+                }    //end of secuence ready
             }
             break;
 
@@ -612,14 +692,27 @@ void GenerateSignalModulated (void)
     switch (modulated_state)
     {
         case INIT_MODULATED:
-            //por ahora solo laser
             UpdateLaserCh1(0);
-
             UpdateLaserCh2(0);
-
             UpdateLaserCh3(0);
-
             UpdateLaserCh4(0);
+
+            undersampling = UNDERSAMPLING_TICKS;    //para que arranque pid
+            d_ch1 = 0;
+            e_z1_ch1 = 0;
+            e_z2_ch1 = 0;
+
+            d_ch2 = 0;
+            e_z1_ch2 = 0;
+            e_z2_ch2 = 0;
+
+            d_ch3 = 0;
+            e_z1_ch3 = 0;
+            e_z2_ch3 = 0;
+
+            d_ch4 = 0;
+            e_z1_ch4 = 0;
+            e_z2_ch4 = 0;            
 
             modulated_index = 0;
             timer_signals_gen = 5;
@@ -637,7 +730,8 @@ void GenerateSignalModulated (void)
                 if (modulated_index < sizeof(v_triangular))
                 {
                     dummy = v_triangular[modulated_index];
-                    
+
+                    //Update Laser Channels
                     dummy2 = signal_to_gen.ch1_power_laser * dummy;
                     dummy2 >>= 8;
                     UpdateLaserCh1(dummy2);
@@ -645,7 +739,7 @@ void GenerateSignalModulated (void)
                     dummy2 = signal_to_gen.ch2_power_laser * dummy;
                     dummy2 >>= 8;
                     UpdateLaserCh2(dummy2);
-
+                    
                     dummy2 = signal_to_gen.ch3_power_laser * dummy;
                     dummy2 >>= 8;
                     UpdateLaserCh3(dummy2);
@@ -654,12 +748,92 @@ void GenerateSignalModulated (void)
                     dummy2 >>= 8;
                     UpdateLaserCh4(dummy2);
 
+                    //Update LEDs, dummy ya cargado
+                    dummy2 = signal_to_gen.ch1_power_led * dummy;
+                    dummy2 >>= 8;
+                    mod_SP_ch1 = dummy2;
+
+                    dummy2 = signal_to_gen.ch2_power_led * dummy;
+                    dummy2 >>= 8;
+                    mod_SP_ch2 = dummy2;
+
+                    dummy2 = signal_to_gen.ch3_power_led * dummy;
+                    dummy2 >>= 8;
+                    mod_SP_ch3 = dummy2;
+
+                    dummy2 = signal_to_gen.ch4_power_led * dummy;
+                    dummy2 >>= 8;
+                    mod_SP_ch4 = dummy2;                    
+
                     timer_signals_gen = 5;
                 }
                 else
                     modulated_state = INIT_MODULATED; 
 
             }
+
+            //para los led - secuencia de leds
+            if (seq_ready)
+            {
+                seq_ready = 0;
+                if (undersampling < UNDERSAMPLING_TICKS)
+                    undersampling++;
+                else
+                {
+                    //PID CH1, el setpoint se actualiza arriba
+                    d_ch1 = PID_roof (mod_SP_ch1, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+
+                    if (d_ch1 < 0)
+                        d_ch1 = 0;
+                    else
+                    {
+                        if (d_ch1 > DUTY_70_PERCENT)
+                            d_ch1 = DUTY_70_PERCENT;
+
+                        Update_TIM3_CH1(d_ch1);
+                    }
+
+                    //PID CH2, el setpoint se actualiza arriba
+                    d_ch2 = PID_roof (mod_SP_ch2, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+
+                    if (d_ch2 < 0)
+                        d_ch2 = 0;
+                    else
+                    {
+                        if (d_ch2 > DUTY_70_PERCENT)
+                            d_ch2 = DUTY_70_PERCENT;
+
+                        Update_TIM3_CH2(d_ch2);
+                    }
+
+                    //PID CH3, el setpoint se actualiza arriba
+                    d_ch3 = PID_roof (mod_SP_ch3, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+
+                    if (d_ch3 < 0)
+                        d_ch3 = 0;
+                    else
+                    {
+                        if (d_ch3 > DUTY_70_PERCENT)
+                            d_ch3 = DUTY_70_PERCENT;
+
+                        Update_TIM3_CH3(d_ch3);
+                    }
+
+                    //PID CH4, el setpoint se actualiza arriba
+                    d_ch4 = PID_roof (mod_SP_ch4, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+
+                    if (d_ch4 < 0)
+                        d_ch4 = 0;
+                    else
+                    {
+                        if (d_ch4 > DUTY_70_PERCENT)
+                            d_ch4 = DUTY_70_PERCENT;
+
+                        Update_TIM3_CH4(d_ch4);
+                    }
+                }    //end of undersampling
+            }    //end of secuence ready
+
             break;
 
         default:

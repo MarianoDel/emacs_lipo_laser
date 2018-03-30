@@ -27,7 +27,7 @@
 
 
 //---- Configuration for Firmware-Programs --------
-#define TEST_ONLY_CH2    //prueba pid solo canal 2, tambien modifica adc y muestreo
+
 
 //-------- Configuration for Outputs-Firmware ------
 
@@ -106,6 +106,40 @@ typedef enum
     WAIT_NEW_CYCLE
 } led_state_t;
 
+//ESTADOS DEL BUZZER
+typedef enum
+{    
+    BUZZER_INIT = 0,
+    BUZZER_TO_STOP,
+
+    BUZZER_MULTIPLE_LONG,
+    BUZZER_MULTIPLE_LONGA,
+    BUZZER_MULTIPLE_LONGB,
+
+    BUZZER_MULTIPLE_HALF,
+    BUZZER_MULTIPLE_HALFA,
+    BUZZER_MULTIPLE_HALFB,
+
+    BUZZER_MULTIPLE_SHORT,
+    BUZZER_MULTIPLE_SHORTA,
+    BUZZER_MULTIPLE_SHORTB
+    
+} buzzer_state_t;
+
+//COMANDOS DEL BUZZER	(tienen que ser los del estado de arriba)
+#define BUZZER_STOP_CMD		10
+#define BUZZER_LONG_CMD		40
+#define BUZZER_HALF_CMD		50
+#define BUZZER_SHORT_CMD	60
+
+#define TIM_BIP_SHORT		50
+#define TIM_BIP_SHORT_WAIT	100
+#define TIM_BIP_HALF		200
+#define TIM_BIP_HALF_WAIT	500
+#define TIM_BIP_LONG		1200
+#define TIM_BIP_LONG_WAIT	1500
+
+
 //Estados Externos de LED BLINKING
 #define LED_NO_BLINKING    0
 #define LED_TREATMENT_STANDBY    1
@@ -122,5 +156,7 @@ typedef enum
 /* Module Functions ------------------------------------------------------------*/
 void ChangeLed (unsigned char);
 void UpdateLed (void);
+void UpdateBuzzer (void);
+void BuzzerCommands(unsigned char, unsigned char);
 
 #endif /* HARD_H_ */
