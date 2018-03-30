@@ -55,7 +55,7 @@ void TimingDelay_Decrement(void);
 
 
 // ------- del DMX -------
-extern void EXTI4_15_IRQHandler(void);
+// extern void EXTI4_15_IRQHandler(void);
 
 
 //-------------------------------------------//

@@ -127,10 +127,10 @@ typedef enum
 } buzzer_state_t;
 
 //COMANDOS DEL BUZZER	(tienen que ser los del estado de arriba)
-#define BUZZER_STOP_CMD		10
-#define BUZZER_LONG_CMD		40
-#define BUZZER_HALF_CMD		50
-#define BUZZER_SHORT_CMD	60
+#define BUZZER_STOP_CMD		BUZZER_TO_STOP
+#define BUZZER_LONG_CMD		BUZZER_MULTIPLE_LONG
+#define BUZZER_HALF_CMD		BUZZER_MULTIPLE_HALF
+#define BUZZER_SHORT_CMD	BUZZER_MULTIPLE_SHORT
 
 #define TIM_BIP_SHORT		50
 #define TIM_BIP_SHORT_WAIT	100

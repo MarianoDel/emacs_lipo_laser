@@ -59,6 +59,10 @@ const char s_start_treatment [] = {"start treatment"};
 const char s_stop_treatment [] = {"stop treatment"};
 const char s_status [] = {"status"};
 const char s_getall [] = {"get all conf"};
+const char s_buzzer_short [] = {"buzzer short"};
+const char s_buzzer_half [] = {"buzzer half"};
+const char s_buzzer_long [] = {"buzzer long"};
+
 
 
 char buffMessages [100];
@@ -227,6 +231,44 @@ resp_t InterpretarMsg (void)
 
             }
         }
+
+        //-- Buzzer Actions
+        else if (strncmp(pStr, s_buzzer_short, sizeof(s_buzzer_short) - 1) == 0)
+        {
+            pStr += sizeof(s_buzzer_short);		//normalizo al payload, hay un espacio
+
+            //lo que viene es un byte de 1 a 9
+            decimales = StringIsANumber(pStr, &new_power);
+            if (decimales == 1)
+                BuzzerCommands(BUZZER_SHORT_CMD, (unsigned char) new_power);
+            else
+                resp = resp_error;
+        }
+
+        else if (strncmp(pStr, s_buzzer_half, sizeof(s_buzzer_half) - 1) == 0)
+        {
+            pStr += sizeof(s_buzzer_half);		//normalizo al payload, hay un espacio
+
+            //lo que viene es un byte de 1 a 9
+            decimales = StringIsANumber(pStr, &new_power);
+            if (decimales == 1)
+                BuzzerCommands(BUZZER_HALF_CMD, (unsigned char) new_power);
+            else
+                resp = resp_error;
+        }
+
+        else if (strncmp(pStr, s_buzzer_long, sizeof(s_buzzer_long) - 1) == 0)
+        {
+            pStr += sizeof(s_buzzer_long);		//normalizo al payload, hay un espacio
+
+            //lo que viene es un byte de 1 a 9
+            decimales = StringIsANumber(pStr, &new_power);
+            if (decimales == 1)
+                BuzzerCommands(BUZZER_LONG_CMD, (unsigned char) new_power);
+            else
+                resp = resp_error;
+        }
+        
 
         //reviso errores y envio
         // 	error_t e;
