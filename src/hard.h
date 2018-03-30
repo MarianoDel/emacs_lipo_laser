@@ -13,15 +13,42 @@
 
 //-- Defines For Configuration -------------------
 //---- Configuration for Hardware Versions -------
-#define VER_1_0
+#define HARDWARE_VERSION_1_0
 
-//---- Configuration for Firmware ----------------
+
+#define SOFTWARE_VERSION_1_0
+// #define SOFTWARE_VERSION_1_1
+
+//---- Features Configuration ----------------
 #define FIRST_POWER_BOARD
 // #define SECOND_POWER_BOARD
 
 //------ Configuration for Firmware-Channels -----
-#define LED_AND_LASER_SAME_POWER    //se toma la potencia de laser como master
-// #define LED_AND_LASER_DIFFERENT_POWER
+// #define LED_AND_LASER_SAME_POWER    //se toma la potencia de laser como master
+#define LED_AND_LASER_DIFFERENT_POWER
+
+//---- End of Features Configuration ----------
+
+
+
+//--- Hardware Welcome Code ------------------//
+#ifdef HARDWARE_VERSION_1_0
+#define HARD "Hardware Version: 1.0\n"
+#endif
+#ifdef HARDWARE_VERSION_2_0
+#define HARD "Hardware Version: 2.0\n"
+#endif
+
+//--- Software Welcome Code ------------------//
+#ifdef SOFTWARE_VERSION_1_2
+#define SOFT "Software Version: 1.2\n"
+#endif
+#ifdef SOFTWARE_VERSION_1_1
+#define SOFT "Software Version: 1.1\n"
+#endif
+#ifdef SOFTWARE_VERSION_1_0
+#define SOFT "Software Version: 1.0\n"
+#endif
 
 //-------- Configuration for Outputs-Channels -----
 

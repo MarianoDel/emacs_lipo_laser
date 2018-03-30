@@ -107,8 +107,47 @@ int main(void)
     ADC1->CR |= ADC_CR_ADSTART;
     
     TIM_14_Init();
+    UpdateLaserCh1(0);
+    UpdateLaserCh2(0);
+    UpdateLaserCh3(0);
+    UpdateLaserCh4(0);
+
     USART1Config();
 
+    //--- Mensaje Bienvenida ---//
+    //---- Defines from hard.h -----//
+#ifdef FIRST_POWER_BOARD
+    Wait_ms(1000);
+#endif
+
+#ifdef SECOND_POWER_BOARD
+    Wait_ms(2000);
+#endif
+    Usart1Send("\nLipoLaser -- powered by: Kirno Technology\n");
+    Wait_ms(100);
+#ifdef HARD
+    Usart1Send(HARD);
+    Wait_ms(100);    
+#else
+#error	"No Hardware defined in hard.h file"
+#endif
+
+#ifdef SOFT
+    Usart1Send(SOFT);
+    Wait_ms(100);    
+#else
+#error	"No Soft Version defined in hard.h file"
+#endif
+    Usart1Send("Features:\n");
+#ifdef LED_AND_LASER_SAME_POWER
+    Usart1Send((const char *)" Led and Lasers use same power\n");
+#endif
+#ifdef LED_AND_LASER_DIFFERENT_POWER
+    Usart1Send((const char *)" Led and Lasers use differents power\n");
+#endif
+
+//---- End of Defines from hard.h -----//
+    
     while (1)
     {        
         TreatmentManager();

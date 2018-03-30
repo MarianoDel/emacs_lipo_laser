@@ -57,12 +57,10 @@ void GPIO_Config (void)
 
 
 #ifdef GPIOA_ENABLE
-
     //--- GPIO A ---//
     if (!GPIOA_CLK)
         GPIOA_CLK_ON;
 
-#ifdef VER_1_0
     temp = GPIOA->MODER;	//2 bits por pin
     temp &= 0x3CC30000;		//PA0 - PA3 (analog input); PA4 PA5 output; PA6 PA7(alternative)
     temp |= 0x4128A5FF;		//PA9 - PA10 (alternative); PA12 & PA15 output
@@ -82,8 +80,6 @@ void GPIO_Config (void)
     temp &= 0xFFFFFFFF;
     temp |= 0x00010050;
     GPIOA->PUPDR = temp;
-
-#endif    //end gpioa ena
 
 #ifdef GPIOB_ENABLE
 
