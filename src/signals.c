@@ -463,9 +463,14 @@ void GenerateSignalCWave (void)
                 else
                 {
                     //PID CH1
-                    dummy = signal_to_gen.ch1_power_led * I_MAX;
-                    dummy >>= 8;
-                    d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+                    if (signal_to_gen.ch1_power_led >= 15)
+                    {                        
+                        dummy = signal_to_gen.ch1_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+                    }
+                    else
+                        d_ch1 = 0;
 
                     if (d_ch1 < 0)
                         d_ch1 = 0;
@@ -478,9 +483,14 @@ void GenerateSignalCWave (void)
                     }
 
                     //PID CH2
-                    dummy = signal_to_gen.ch2_power_led * I_MAX;
-                    dummy >>= 8;
-                    d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+                    if (signal_to_gen.ch2_power_led >= 15)
+                    {                        
+                        dummy = signal_to_gen.ch2_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+                    }
+                    else
+                        d_ch2 = 0;
 
                     if (d_ch2 < 0)
                         d_ch2 = 0;
@@ -493,9 +503,14 @@ void GenerateSignalCWave (void)
                     }
 
                     //PID CH3
-                    dummy = signal_to_gen.ch3_power_led * I_MAX;
-                    dummy >>= 8;
-                    d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+                    if (signal_to_gen.ch3_power_led >= 15)
+                    {                                            
+                        dummy = signal_to_gen.ch3_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+                    }
+                    else
+                        d_ch3 = 0;
 
                     if (d_ch3 < 0)
                         d_ch3 = 0;
@@ -508,9 +523,14 @@ void GenerateSignalCWave (void)
                     }
 
                     //PID CH4
-                    dummy = signal_to_gen.ch4_power_led * I_MAX;
-                    dummy >>= 8;
-                    d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+                    if (signal_to_gen.ch4_power_led >= 15)
+                    {                        
+                        dummy = signal_to_gen.ch4_power_led * I_MAX;
+                        dummy >>= 8;
+                        d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+                    }
+                    else
+                        d_ch4 = 0;
 
                     if (d_ch4 < 0)
                         d_ch4 = 0;
@@ -607,9 +627,14 @@ void GenerateSignalPulsed (void)
                     else
                     {
                         //PID CH1
-                        dummy = signal_to_gen.ch1_power_led * I_MAX;
-                        dummy >>= 8;
-                        d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+                        if (signal_to_gen.ch1_power_led >= 15)
+                        {                        
+                            dummy = signal_to_gen.ch1_power_led * I_MAX;
+                            dummy >>= 8;
+                            d_ch1 = PID_roof (dummy, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+                        }
+                        else
+                            d_ch1 = 0;
 
                         if (d_ch1 < 0)
                             d_ch1 = 0;
@@ -622,9 +647,14 @@ void GenerateSignalPulsed (void)
                         }
 
                         //PID CH2
-                        dummy = signal_to_gen.ch2_power_led * I_MAX;
-                        dummy >>= 8;
-                        d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+                        if (signal_to_gen.ch2_power_led >= 15)
+                        {                        
+                            dummy = signal_to_gen.ch2_power_led * I_MAX;
+                            dummy >>= 8;
+                            d_ch2 = PID_roof (dummy, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+                        }
+                        else
+                            d_ch2 = 0;
 
                         if (d_ch2 < 0)
                             d_ch2 = 0;
@@ -637,9 +667,14 @@ void GenerateSignalPulsed (void)
                         }
 
                         //PID CH3
-                        dummy = signal_to_gen.ch3_power_led * I_MAX;
-                        dummy >>= 8;
-                        d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+                        if (signal_to_gen.ch3_power_led >= 15)
+                        {                        
+                            dummy = signal_to_gen.ch3_power_led * I_MAX;
+                            dummy >>= 8;
+                            d_ch3 = PID_roof (dummy, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+                        }
+                        else
+                            d_ch3 = 0;
 
                         if (d_ch3 < 0)
                             d_ch3 = 0;
@@ -652,9 +687,14 @@ void GenerateSignalPulsed (void)
                         }
 
                         //PID CH4
-                        dummy = signal_to_gen.ch4_power_led * I_MAX;
-                        dummy >>= 8;
-                        d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+                        if (signal_to_gen.ch4_power_led >= 15)
+                        {                        
+                            dummy = signal_to_gen.ch4_power_led * I_MAX;
+                            dummy >>= 8;
+                            d_ch4 = PID_roof (dummy, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+                        }
+                        else
+                            d_ch4 = 0;
 
                         if (d_ch4 < 0)
                             d_ch4 = 0;
@@ -781,7 +821,12 @@ void GenerateSignalModulated (void)
                 else
                 {
                     //PID CH1, el setpoint se actualiza arriba
-                    d_ch1 = PID_roof (mod_SP_ch1, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+                    if (signal_to_gen.ch1_power_led >= 15)
+                    {                        
+                        d_ch1 = PID_roof (mod_SP_ch1, I_Sense_Ch1, d_ch1, &e_z1_ch1, &e_z2_ch1);
+                    }
+                    else
+                        d_ch1 = 0;
 
                     if (d_ch1 < 0)
                         d_ch1 = 0;
@@ -794,7 +839,12 @@ void GenerateSignalModulated (void)
                     }
 
                     //PID CH2, el setpoint se actualiza arriba
-                    d_ch2 = PID_roof (mod_SP_ch2, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+                    if (signal_to_gen.ch2_power_led >= 15)
+                    {                        
+                        d_ch2 = PID_roof (mod_SP_ch2, I_Sense_Ch2, d_ch2, &e_z1_ch2, &e_z2_ch2);
+                    }
+                    else
+                        d_ch2 = 0;
 
                     if (d_ch2 < 0)
                         d_ch2 = 0;
@@ -807,7 +857,12 @@ void GenerateSignalModulated (void)
                     }
 
                     //PID CH3, el setpoint se actualiza arriba
-                    d_ch3 = PID_roof (mod_SP_ch3, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+                    if (signal_to_gen.ch3_power_led >= 15)
+                    {                        
+                        d_ch3 = PID_roof (mod_SP_ch3, I_Sense_Ch3, d_ch3, &e_z1_ch3, &e_z2_ch3);
+                    }
+                    else
+                        d_ch3 = 0;
 
                     if (d_ch3 < 0)
                         d_ch3 = 0;
@@ -820,7 +875,12 @@ void GenerateSignalModulated (void)
                     }
 
                     //PID CH4, el setpoint se actualiza arriba
-                    d_ch4 = PID_roof (mod_SP_ch4, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+                    if (signal_to_gen.ch4_power_led >= 15)
+                    {                        
+                        d_ch4 = PID_roof (mod_SP_ch4, I_Sense_Ch4, d_ch4, &e_z1_ch4, &e_z2_ch4);
+                    }
+                    else
+                        d_ch4 = 0;
 
                     if (d_ch4 < 0)
                         d_ch4 = 0;
