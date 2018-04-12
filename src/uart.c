@@ -79,7 +79,7 @@ void USART1_IRQHandler(void)
     {
         dummy = USART1->RDR & 0x0FF;
 
-        if (prx1 < &rx1buff[SIZEOF_RXDATA])
+        if (prx1 < &rx1buff[SIZEOF_RXDATA - 1])
         {
             if ((dummy == '\n') || (dummy == '\r') || (dummy == 26))		//26 es CTRL-Z
             {
