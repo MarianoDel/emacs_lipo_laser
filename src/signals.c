@@ -69,8 +69,9 @@ unsigned short soft_overcurrent_index = 0;
 
 
 //Signals Templates
-#define I_MAX 195    //0.35A x 1.8ohms cuantizado 1023 puntos
-                     //0.29A x 2.2ohms
+#define I_MAX 151    //195 0.29A x 2.2ohms; lo entregado en el prototipo
+                     //151 0.3A x 2.2ohms con leds Javi 19-07-2018
+                 
 #define I_MIN 15
 
 const unsigned char v_triangular [] = {0,2,5,7,10,12,15,17,20,22,
@@ -793,18 +794,26 @@ void GenerateSignalModulated (void)
                     //Update LEDs, dummy ya cargado
                     dummy2 = signal_to_gen.ch1_power_led * dummy;
                     dummy2 >>= 8;
+                    dummy2 = dummy2 * I_MAX;
+                    dummy2 >>= 8;
                     mod_SP_ch1 = dummy2;
 
                     dummy2 = signal_to_gen.ch2_power_led * dummy;
                     dummy2 >>= 8;
+                    dummy2 = dummy2 * I_MAX;
+                    dummy2 >>= 8;                    
                     mod_SP_ch2 = dummy2;
 
                     dummy2 = signal_to_gen.ch3_power_led * dummy;
                     dummy2 >>= 8;
+                    dummy2 = dummy2 * I_MAX;
+                    dummy2 >>= 8;                    
                     mod_SP_ch3 = dummy2;
 
                     dummy2 = signal_to_gen.ch4_power_led * dummy;
                     dummy2 >>= 8;
+                    dummy2 = dummy2 * I_MAX;
+                    dummy2 >>= 8;                    
                     mod_SP_ch4 = dummy2;                    
 
                     timer_signals_gen = 5;

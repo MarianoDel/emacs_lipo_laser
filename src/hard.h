@@ -13,11 +13,13 @@
 
 //-- Defines For Configuration -------------------
 //---- Configuration for Hardware Versions -------
-#define HARDWARE_VERSION_1_0
+#define HARDWARE_VERSION_1_1
+// #define HARDWARE_VERSION_1_0
 
 
-#define SOFTWARE_VERSION_1_0
-// #define SOFTWARE_VERSION_1_1
+#define SOFTWARE_VERSION_1_1
+// #define SOFTWARE_VERSION_1_0
+
 
 //---- Features Configuration ----------------
 #define FIRST_POWER_BOARD
@@ -32,6 +34,9 @@
 
 
 //--- Hardware Welcome Code ------------------//
+#ifdef HARDWARE_VERSION_1_1
+#define HARD "Hardware Version: 1.1\n"
+#endif
 #ifdef HARDWARE_VERSION_1_0
 #define HARD "Hardware Version: 1.0\n"
 #endif
