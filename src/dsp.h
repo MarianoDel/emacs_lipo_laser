@@ -1,26 +1,35 @@
-/*
- * dsp.h
- *
- *  Created on: 02/12/2015
- *      Author: Mariano
- */
+//---------------------------------------------
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### DSP.H #################################
+//---------------------------------------------
+#ifndef _DSP_H_
+#define _DSP_H_
 
-#ifndef DSP_H_
-#define DSP_H_
+//--- Defines for Configuration ------------------------------
+#define USE_PID_CONTROLLERS
+// #define USE_MA8_CIRCULAR
 
-#define MAFilter32Pote(X)  MAFilter32Circular(X, v_pote_samples, &v_pote_index, &pote_sumation)
+//--- Exported types ---//
+//--- Exported constants ---//
 
+//--- Module Functions ---//
 unsigned short RandomGen (unsigned int);
 unsigned char MAFilter (unsigned char, unsigned char *);
 unsigned short MAFilterFast (unsigned short ,unsigned short *);
 unsigned short MAFilter8 (unsigned short *);
 unsigned short MAFilter32 (unsigned short, unsigned short *);
 
+unsigned short MAFilter32Fast (unsigned short *);
 unsigned short MAFilter32Circular (unsigned short, unsigned short *, unsigned char *, unsigned int *);
 
 short PID (short, short);
 short PID_roof (short, short, short, short *, short *);
 
+void MA8Circular_Start (void);
+void MA8Circular_Reset (void);
+unsigned short MA8Circular (unsigned short);
 
-
-#endif /* DSP_H_ */
+#endif /* _DSP_H_ */

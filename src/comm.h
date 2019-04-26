@@ -1,10 +1,16 @@
-/* Define to prevent recursive inclusion -------------------------------------*/
+//---------------------------------------------
+// #### PROYECTO LIPO LASER - Custom Board ####
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### COMM.H ################################
+//---------------------------------------------
 #ifndef _COMM_H_
 #define _COMM_H_
 
-
 //--- Exported types ---//
-
 //--- Exported constants ---//
 typedef enum {
 	resp_ok = 0,
@@ -22,5 +28,4 @@ unsigned char InterpretarMsg (void);
 
 
 #endif
-//--- End ---//
-//--- END OF FILE ---//
+//--- end of file ---//

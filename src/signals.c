@@ -17,12 +17,13 @@
 #include "dsp.h"
 #include "uart.h"
 #include "gpio.h"
+#include "dma.h"
+
 #include <stdio.h>
 
 
 //--- VARIABLES EXTERNAS ---//
 //del ADC
-extern volatile unsigned char seq_ready;
 extern volatile unsigned short adc_ch[];
 
 //del Main
@@ -458,9 +459,9 @@ void GenerateSignalCWave (void)
                 cwave_state = UPDATE_POWER_CWAVE;
 
             //secuencia de leds
-            if (seq_ready)
+            if (sequence_ready)
             {
-                seq_ready = 0;
+                sequence_ready_reset;
                 if (undersampling < UNDERSAMPLING_TICKS)
                     undersampling++;
                 else
@@ -622,9 +623,9 @@ void GenerateSignalPulsed (void)
             else
             {
                 //secuencia de leds
-                if (seq_ready)
+                if (sequence_ready)
                 {
-                    seq_ready = 0;
+                    sequence_ready_reset;
                     if (undersampling < UNDERSAMPLING_TICKS)
                         undersampling++;
                     else
@@ -824,9 +825,9 @@ void GenerateSignalModulated (void)
             }
 
             //para los led - secuencia de leds
-            if (seq_ready)
+            if (sequence_ready)
             {
-                seq_ready = 0;
+                sequence_ready_reset;
                 if (undersampling < UNDERSAMPLING_TICKS)
                     undersampling++;
                 else

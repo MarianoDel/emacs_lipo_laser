@@ -1,15 +1,19 @@
-/*
- * adc.c
- *
- *  Created on: 04/05/2015
- *      Author: Mariano
- */
+//---------------------------------------------
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ## @CPU:    STM32F030
+// ##
+// #### ADC.C #################################
+//---------------------------------------------
+
+/* Includes ------------------------------------------------------------------*/
 #include "adc.h"
 #include "stm32f0xx.h"
 #include "hard.h"
 
 
-//--- VARIABLES EXTERNAS ---//
+/* Externals ------------------------------------------------------------------*/
 extern volatile unsigned short adc_ch [];
 
 
@@ -21,7 +25,7 @@ extern volatile unsigned char seq_ready;
 extern volatile unsigned short tt_take_temp_sample;
 #endif
 
-//--- VARIABLES GLOBALES ---//
+/* Globals ------------------------------------------------------------------*/
 #ifdef ADC_WITH_INT
 volatile unsigned short * p_channel;
 #endif
@@ -35,6 +39,7 @@ unsigned char new_temp_sample = 0;
 #endif
 
 
+/* Module Functions -----------------------------------------------------------*/
 //Single conversion mode (CONT=0)
 //In Single conversion mode, the ADC performs a single sequence of conversions,
 //converting all the channels once.
@@ -86,10 +91,10 @@ void AdcConfig (void)
     //las dos int (usar DMA?) y pierde el valor intermedio
     //ADC1->SMPR |= ADC_SampleTime_1_5Cycles;			//20.7 de salida son SP 420 (regula mal)
 
-#ifdef ADC_WITH_INT
     //set channel selection
     ADC1->CHSELR |= ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3;    
 
+#ifdef ADC_WITH_INT        
     //set interrupts
     ADC1->IER |= ADC_IT_EOC;
 
@@ -107,6 +112,10 @@ void AdcConfig (void)
     //calibrar ADC
     ADCGetCalibrationFactor();
 
+#ifdef ADC_WITH_DMA
+    ADC1->CFGR1 |= ADC_CFGR1_DMAEN | ADC_CFGR1_DMACFG;
+#endif
+    
     // Enable ADC1
     ADC1->CR |= ADC_CR_ADEN;
 }

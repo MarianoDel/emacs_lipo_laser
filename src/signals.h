@@ -1,6 +1,14 @@
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __SIGNALS_H
-#define __SIGNALS_H
+//---------------------------------------------
+// #### PROYECTO LIPO LASER - Custom Board ####
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### SIGNALS.H #############################
+//---------------------------------------------
+#ifndef _SIGNALS_H_
+#define _SIGNALS_H_
 #include "comm.h"		//para respuestas
 
 //--- Exported types ---//

@@ -110,6 +110,7 @@ SRC += ./src/signals.c
 SRC += ./src/adc.c
 SRC += ./src/uart.c
 SRC += ./src/dsp.c
+SRC += ./src/dma.c
 SRC += ./src/hard.c
 SRC += ./src/utils.c
 # SRC += ./src/programs_functions.c

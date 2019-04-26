@@ -1,19 +1,11 @@
-/**
-  ******************************************************************************
-  * @file    Template_2/main.h
-  * @author  Nahuel
-  * @version V1.0
-  * @date    22-August-2014
-  * @brief   Header for tim module
-  ******************************************************************************
-  * @attention
-  *
-  *
-  *
-  ******************************************************************************
-  */
-
-/* Define to prevent recursive inclusion -------------------------------------*/
+//---------------------------------------------
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ## @CPU:    STM32F030
+// ##
+// #### TIM.C ################################
+//---------------------------------------------
 #ifndef _TIM_H_
 #define _TIM_H_
 
@@ -76,8 +68,7 @@ void UpdateLaserCh3 (unsigned char);
 void UpdateLaserCh4 (unsigned char);
 
 void Wait_ms (unsigned short wait);
-#endif
-//--- End ---//
 
+#endif    /* _TIM_H_ */
 
-//--- END OF FILE ---//
+//--- end of file ---//

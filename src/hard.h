@@ -1,10 +1,12 @@
-/*
- * hard.h
- *
- *  Created on: 28/11/2013
- *      Author: Mariano
- */
-
+//---------------------------------------------
+// #### PROYECTO LIPO LASER - Custom Board ####
+// ##
+// ## @Author: Med
+// ## @Editor: Emacs - ggtags
+// ## @TAGS:   Global
+// ##
+// #### HARD.C ################################
+//---------------------------------------------
 #ifndef _HARD_H_
 #define _HARD_H_
 
@@ -176,13 +178,13 @@ typedef enum
 #define LED_NO_BLINKING    0
 #define LED_TREATMENT_STANDBY    1
 #define LED_TREATMENT_GENERATING    2
-
 #define LED_TREATMENT_ERROR    6
 
-#define I_Sense_Ch1 adc_ch[0]
-#define I_Sense_Ch2 adc_ch[1]
-#define I_Sense_Ch3 adc_ch[2]
-#define I_Sense_Ch4 adc_ch[3]
+//--- Stringtify Utils -----------------------
+#define STRING_CONCAT(str1,str2) #str1 " " #str2
+#define STRING_CONCAT_NEW_LINE(str1,str2) xstr(str1) #str2 "\n"
+#define xstr_macro(s) str_macro(s)
+#define str_macro(s) #s
 
 
 /* Module Functions ------------------------------------------------------------*/
@@ -191,4 +193,8 @@ void UpdateLed (void);
 void UpdateBuzzer (void);
 void BuzzerCommands(unsigned char, unsigned char);
 
-#endif /* HARD_H_ */
+
+#endif /* _HARD_H_ */
+
+//--- end of file ---//
+

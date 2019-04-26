@@ -1,14 +1,22 @@
 * Mediciones Placa
 
-** Consumo de corriente en LEDs
+** DONE Consumo de corriente en LEDs
+   CLOSED: [2019-04-26 Fri 09:28]
    - Con los Leds de Javi, polarizados a 300mA el sensado en R2.2 = 480mV
    - Dentro del programa es un seteo de 197 puntos
+   - La corriente es un promedio del Duty en la R2.2 ohms
 
 ** TODO Cambios Hardware
 *** Cambiar regulador de entrada!!!!
     - Poner 7812 con disipador
+    - Igual mejorar este porque el 7812 tambien calienta
 **** tiene 80mA de corriente stand-by y se quema el KST42 (19-07-2018)
 
+*** Duplicar conectores de alimentacion para poder conectar segunda placa
+    - hacer en la placa principal o en los conversores de alimentacion
+
+*** Distintos conectores para distintas tensiones
+    - 24V y 3.3V pot tienen el mismo conector
 
 * LIPOLASER ESPECIFICACIONES DEL DESARROLLO
 
@@ -40,6 +48,13 @@
    tiempo para re-ubicar pads
 
 ** INICIO PAUSA STOP
-
 ** HARDWARE
 *** COMUNICACION CON PLACA POTENCIA (Protocolo de 1 a 4 placas)
+
+
+* Adaptacion a 8 Pads
+** TODO Actualizar Protocolo incluir canales ch5 - ch8
+** TODO Apagar el Buzzer si es segunda placa
+** TODO Pasar ADC a DMA
+
+
