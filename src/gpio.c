@@ -67,10 +67,25 @@ void GPIO_Config (void)
     GPIOA->MODER = temp;
 
     temp = GPIOA->OTYPER;	//1 bit por pin
+#ifdef USART_TX_OUTPUT_OPEN_DRAIN    
+    temp &= 0xFFFFFD3F;    //PA9 PA7 PA6 open drain
+    temp |= 0x000002C0;
+#else
     temp &= 0xFFFFFF3F;    //PA7 PA6 open drain
     temp |= 0x000000C0;
+#endif
     GPIOA->OTYPER = temp;
 
+//     temp = GPIOA->OTYPER;	//1 bit por pin
+
+//     temp &= 0xFFFFFDFF;
+//     temp |= 0x00000200;        //open drain PA10
+// #else
+//     temp &= 0xFFFFFFFF;
+//     temp |= 0x00000000; 
+// #endif
+//     GPIOA->OTYPER = temp;
+    
     temp = GPIOA->OSPEEDR;	//2 bits por pin
     temp &= 0x3CC300FF;
     temp |= 0x00000000;		//low speed

@@ -24,14 +24,21 @@
 
 
 //---- Features Configuration ----------------
-// #define FIRST_POWER_BOARD
-#define SECOND_POWER_BOARD
+#define FIRST_POWER_BOARD
+// #define SECOND_POWER_BOARD
+
+//Modo de uso de la USART (placa individual single - placa enganchada bus)
+#define USART_IN_BUS
+// #define USART_SINGLE
 
 //------ Configuration for Firmware-Channels -----
 // #define LED_AND_LASER_SAME_POWER    //se toma la potencia de laser como master
 #define LED_AND_LASER_DIFFERENT_POWER
 
 //---- End of Features Configuration ----------
+#if defined USART_IN_BUS || defined SECOND_POWER_BOARD
+#define USART_TX_OUTPUT_OPEN_DRAIN
+#endif
 
 
 
