@@ -151,10 +151,10 @@ int main(void)
 #endif
     Usart1Send("Features:\n");
 #ifdef LED_AND_LASER_SAME_POWER
-    Usart1Send((const char *)" Led and Lasers use same power\n");
+    Usart1Send(" Led and Lasers use same power\n");
 #endif
 #ifdef LED_AND_LASER_DIFFERENT_POWER
-    Usart1Send((const char *)" Led and Lasers use differents power\n");
+    Usart1Send(" Led and Lasers use differents power\n");
 #endif
 
 //---- End of Defines from hard.h -----//

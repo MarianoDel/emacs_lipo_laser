@@ -42,7 +42,7 @@ const char s_ch4 [] = {"ch4"};
 const char s_ch1 [] = {"ch5"};
 const char s_ch2 [] = {"ch6"};
 const char s_ch3 [] = {"ch7"};
-const char s_ch3 [] = {"ch8"};
+const char s_ch4 [] = {"ch8"};
 #endif
 const char s_chf [] = {"chf"};
 //--- Available Settings
@@ -114,7 +114,15 @@ resp_t InterpretarMsg (void)
         if (*(pStr + 2) == 'f')
             ch = 0x0F;
         else
+        {
+#ifdef FIRST_POWER_BOARD
             ch = *(pStr + 2) - 48;
+#endif
+#ifdef SECOND_POWER_BOARD
+            ch = *(pStr + 2) - 48;
+            ch -= 4;
+#endif
+        }
 
         pStr += sizeof(s_chf);	//normalizo al mensaje, hay un espacio
 
@@ -161,7 +169,7 @@ resp_t InterpretarMsg (void)
             if (decimales < 4)
             {
                 resp = SetPowerLed (ch, new_power);
-                // sprintf(b, "dec: %d, power: %d\n", decimales, new_power);
+                // sprintf(b, "ch: %d, dec: %d, power: %d\n", ch, decimales, new_power);
                 // Usart1Send(b);
             }
             else

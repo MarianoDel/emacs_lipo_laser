@@ -24,8 +24,8 @@
 
 
 //---- Features Configuration ----------------
-#define FIRST_POWER_BOARD
-// #define SECOND_POWER_BOARD
+// #define FIRST_POWER_BOARD
+#define SECOND_POWER_BOARD
 
 //------ Configuration for Firmware-Channels -----
 // #define LED_AND_LASER_SAME_POWER    //se toma la potencia de laser como master
