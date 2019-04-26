@@ -124,13 +124,18 @@ int main(void)
     //---- Defines from hard.h -----//
 #ifdef FIRST_POWER_BOARD
     Wait_ms(1000);
+    Usart1Send("\nLipoLaser -- powered by: Kirno Technology\n");
+    Wait_ms(100);
+    Usart1Send("First Power Board\n\n");
 #endif
 
 #ifdef SECOND_POWER_BOARD
     Wait_ms(2000);
-#endif
     Usart1Send("\nLipoLaser -- powered by: Kirno Technology\n");
     Wait_ms(100);
+    Usart1Send("Second Power Board\n\n");    
+#endif
+    
 #ifdef HARD
     Usart1Send(HARD);
     Wait_ms(100);    
@@ -159,7 +164,9 @@ int main(void)
         TreatmentManager();
         UpdateCommunications();
         UpdateLed();
+#ifdef FIRST_POWER_BOARD
         UpdateBuzzer();
+#endif
     }
 
     return 0;
